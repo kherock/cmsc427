@@ -1,0 +1,7 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>simple.fsh</file>
+    <file>simple.vsh</file>
+    <file>reachup.png</file>
+</qresource>
+</RCC>
