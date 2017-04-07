@@ -4,6 +4,7 @@
 #include <cmath>
 #include <limits>
 #include <math.h>
+#include <time.h>
 
 using namespace std;
 
@@ -290,6 +291,7 @@ void GLview::update_mesh()
     if(mesh == NULL) return;
     makeCurrent();
     mesh->storeVBO();
+    mesh->updateVertices();
 
     // Update VBOs associated with shaders.
     wire_shader.bind();
@@ -343,7 +345,6 @@ void GLview::toggleTranslate()
 
 void GLview::inflate()
 {
-    cout << "implement inflate()\n";
     // popup dialog box to get user input
     bool ok;
     double factor = QInputDialog::getDouble(this, tr("QInputDialog::getDouble()"),tr("Factor:"), 0, -5, numeric_limits<double>::max(), 2, &ok);
@@ -352,15 +353,16 @@ void GLview::inflate()
         QMessageBox::information(this, tr("Application Name"), tr("Input value not in acceptable range. Please try a different value.") );
         return;
     }
+    if (mesh == NULL) return;
+    for (int i = 0; i < mesh->vertices.size(); i++) {
+        mesh->vertices[i].v += mesh->vertices[i].normal * factor * mesh->vertices[i].avgEdgeLen;
+    }
     cout << factor << "\n";
-    cout << copysign(10.0, -1.0) << "\n";
-
+    update_mesh();
 }
 
 void GLview::randomNoise()
 {
-    cout << "implement randomNoise()\n";
-
     // popup dialog box to get user input
     bool ok;
     double factor = QInputDialog::getDouble(this, tr("QInputDialog::getDouble()"),tr("Factor:"), 0, numeric_limits<double>::min(), numeric_limits<double>::max(), 2, &ok);
@@ -369,7 +371,15 @@ void GLview::randomNoise()
         QMessageBox::information(this, tr("Application Name"), tr("Input value not in acceptable range. Please try a different value.") );
         return;
     }
+    if (mesh == NULL) return;
+    srand(time(NULL));
+    for (int i = 0; i < mesh->vertices.size(); i++) {
+        QVector3D randv = QVector3D(rand(), rand(), rand()).normalized();
+        double len = factor * mesh->vertices[i].avgEdgeLen * (double)rand() / RAND_MAX;
+        mesh->vertices[i].v += randv * len;
+    }
     cout << factor << "\n";
+    update_mesh();
 }
 
 void GLview::splitFaces()

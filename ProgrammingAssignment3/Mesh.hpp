@@ -18,8 +18,19 @@ struct Mesh_Face {
     long vert[3]; // indices (in the vertex array) of all vertices (mesh_vertex)
 };
 
+struct Vertex {
+    Vertex(float x, float y, float z) {
+        v = QVector3D(x, y, z);
+    }
+    QVector3D v;
+    QVector3D normal;
+    float avgEdgeLen;
+    vector<long> edges;
+    vector<long> faces;
+};
+
 struct Mesh {
-    vector<QVector3D> vertices; // List of shared verticies.
+    vector<Vertex> vertices; // List of shared verticies.
     vector<Mesh_Face> faces; // Mesh faces.
     QOpenGLBuffer vertexBuffer, baryBuffer;
 
@@ -27,7 +38,9 @@ struct Mesh {
 
     bool load_obj(QString filename);
     void storeVBO();
+    void updateVertices();
     void recenter();
+    void add_unique_edge(int v0, int v1);
     void add_face(const vector<int> &cur_vert);
     void process_example();
 };
