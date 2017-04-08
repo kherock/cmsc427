@@ -11,7 +11,6 @@ struct Mesh_Face {
     Mesh_Face() {
         vert[0] = vert[1] = vert[2] = -1;
     }
-
     Mesh_Face(long v0, long v1, long v2) {
         vert[0] = v0; vert[1] = v1; vert[2] = v2;
     }
@@ -19,10 +18,15 @@ struct Mesh_Face {
 };
 
 struct Vertex {
+    Vertex() {
+        v = QVector3D();
+    }
     Vertex(float x, float y, float z) {
         v = QVector3D(x, y, z);
     }
+
     QVector3D v;
+
     QVector3D normal;
     float avgEdgeLen;
     vector<long> edges;

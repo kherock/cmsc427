@@ -378,7 +378,6 @@ void GLview::randomNoise()
         double len = factor * mesh->vertices[i].avgEdgeLen * (double)rand() / RAND_MAX;
         mesh->vertices[i].v += randv * len;
     }
-    cout << factor << "\n";
     update_mesh();
 }
 
@@ -414,7 +413,37 @@ void GLview::centerVerticesTangentially()
 
 void GLview::sharpen()
 {
-    cout << "implement sharpen()\n";
+  vector<Vertex> out;
+  out.resize(mesh->vertices.size());
+  for (int i = 0; i < mesh->vertices.size(); i++) {
+    Vertex &v = mesh->vertices[i];
+    float sigma = mesh->vertices[i].avgEdgeLen;
+    double variance2 = sigma * sigma * 2.0;
+    float totalWeight = 0;
+    float weight;
+    
+    vector<float> weights; // weights of the neighboring vertices
+    weights.resize(v.edges.size());
+
+    weight = 1 / sqrt(M_PI * variance2); // weight of the vertex being processed
+    totalWeight += weight;
+    out[i].v += weight*v.v;
+
+    for (int j = 0; j < v.edges.size(); j++) {
+        float distance = (v.v - mesh->vertices[v.edges[j]].v).length();
+        weight = exp(-(distance*distance) / variance2) / sqrt(M_PI * variance2);
+        totalWeight += weight;
+        out[i].v += weight*mesh->vertices[v.edges[j]].v;
+    }
+    // Normalize the summed coordinates so that the weights sum to 1
+    out[i].v /= totalWeight;
+    out[i].v += 2 * (mesh->vertices[i].v - out[i].v);
+    out[i].edges.swap(mesh->vertices[i].edges);
+    out[i].faces.swap(mesh->vertices[i].faces);
+  }
+  mesh->vertices.clear();
+  mesh->vertices.swap(out);
+  update_mesh();
 }
 
 void GLview::truncate()
@@ -443,5 +472,34 @@ void GLview::flipEdges()
 }
 
 void GLview::smooth() {
-  cout << "implement smooth()\n";
+  vector<Vertex> out;
+  out.resize(mesh->vertices.size());
+  for (int i = 0; i < mesh->vertices.size(); i++) {
+    Vertex &v = mesh->vertices[i];
+    float sigma = mesh->vertices[i].avgEdgeLen;
+    double variance2 = sigma * sigma * 2.0;
+    float totalWeight = 0;
+    float weight;
+    
+    vector<float> weights; // weights of the neighboring vertices
+    weights.resize(v.edges.size());
+
+    weight = 1 / sqrt(M_PI * variance2); // weight of the vertex being processed
+    totalWeight += weight;
+    out[i].v += weight*v.v;
+
+    for (int j = 0; j < v.edges.size(); j++) {
+        float distance = (v.v - mesh->vertices[v.edges[j]].v).length();
+        weight = exp(-(distance*distance) / variance2) / sqrt(M_PI * variance2);
+        totalWeight += weight;
+        out[i].v += weight*mesh->vertices[v.edges[j]].v;
+    }
+    // Normalize the summed coordinates so that the weights sum to 1
+    out[i].v /= totalWeight;
+    out[i].edges.swap(mesh->vertices[i].edges);
+    out[i].faces.swap(mesh->vertices[i].faces);
+  }
+  mesh->vertices.clear();
+  mesh->vertices.swap(out);
+  update_mesh();
 }
