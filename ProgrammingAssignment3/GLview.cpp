@@ -343,76 +343,58 @@ void GLview::toggleTranslate()
 
 // Note. After updating/modifying the mesh, you'll need to call update_mesh() below.
 
-void GLview::inflate()
-{
-    // popup dialog box to get user input
-    bool ok;
-    double factor = QInputDialog::getDouble(this, tr("QInputDialog::getDouble()"),tr("Factor:"), 0, -5, numeric_limits<double>::max(), 2, &ok);
-    if (!ok) {
-        // warning message to notify user of bad input
-        QMessageBox::information(this, tr("Application Name"), tr("Input value not in acceptable range. Please try a different value.") );
-        return;
-    }
-    if (mesh == NULL) return;
-    for (int i = 0; i < mesh->vertices.size(); i++) {
-        mesh->vertices[i].v += mesh->vertices[i].normal * factor * mesh->vertices[i].avgEdgeLen;
-    }
-    cout << factor << "\n";
-    update_mesh();
+void GLview::inflate() {
+  // popup dialog box to get user input
+  bool ok;
+  double factor = QInputDialog::getDouble(this, tr("QInputDialog::getDouble()"), tr("Factor:"), 0, -5,
+                                          numeric_limits<double>::max(), 2, &ok);
+  if (!ok) {
+    // warning message to notify user of bad input
+    QMessageBox::information(this, tr("Application Name"),
+                             tr("Input value not in acceptable range. Please try a different value."));
+    return;
+  }
+  if (mesh == NULL) return;
+  for (int i = 0; i < mesh->vertices.size(); i++) {
+    mesh->vertices[i].v += mesh->vertices[i].normal * factor * mesh->vertices[i].avgEdgeLen;
+  }
+  update_mesh();
 }
 
-void GLview::randomNoise()
-{
-    // popup dialog box to get user input
-    bool ok;
-    double factor = QInputDialog::getDouble(this, tr("QInputDialog::getDouble()"),tr("Factor:"), 0, numeric_limits<double>::min(), numeric_limits<double>::max(), 2, &ok);
-    if (!ok) {
-        // warning message to notify user of bad input
-        QMessageBox::information(this, tr("Application Name"), tr("Input value not in acceptable range. Please try a different value.") );
-        return;
-    }
-    if (mesh == NULL) return;
-    srand(time(NULL));
-    for (int i = 0; i < mesh->vertices.size(); i++) {
-        QVector3D randv = QVector3D(rand(), rand(), rand()).normalized();
-        double len = factor * mesh->vertices[i].avgEdgeLen * (double)rand() / RAND_MAX;
-        mesh->vertices[i].v += randv * len;
-    }
-    update_mesh();
+void GLview::randomNoise() {
+  // popup dialog box to get user input
+  bool ok;
+  double factor = QInputDialog::getDouble(this, tr("QInputDialog::getDouble()"), tr("Factor:"), 0,
+                                          numeric_limits<double>::min(), numeric_limits<double>::max(), 2, &ok);
+  if (!ok) {
+    // warning message to notify user of bad input
+    QMessageBox::information(this, tr("Application Name"),
+                             tr("Input value not in acceptable range. Please try a different value."));
+    return;
+  }
+  if (mesh == NULL) return;
+  srand(time(NULL));
+  for (int i = 0; i < mesh->vertices.size(); i++) {
+    QVector3D randv = QVector3D(rand(), rand(), rand()).normalized();
+    double len = factor * mesh->vertices[i].avgEdgeLen * (double)rand() / RAND_MAX;
+    mesh->vertices[i].v += randv * len;
+  }
+  update_mesh();
 }
 
-void GLview::splitFaces()
-{
-    cout << "implement splitFaces()\n";
-}
+void GLview::splitFaces() { cout << "implement splitFaces()\n"; }
 
-void GLview::starFaces()
-{
-    cout << "implement starFaces()\n";
-}
+void GLview::starFaces() { cout << "implement starFaces()\n"; }
 
-void GLview::splitLongEdges()
-{
-    cout << "implement splitLongEdges()\n";
-}
+void GLview::splitLongEdges() { cout << "implement splitLongEdges()\n"; }
 
-void GLview::collapseShortEdges()
-{
-    cout << "implement collapseShortEdges()\n";
-}
+void GLview::collapseShortEdges() { cout << "implement collapseShortEdges()\n"; }
 
-void GLview::crop()
-{
-    cout << "implement crop()\n";
-}
+void GLview::crop() { cout << "implement crop()\n"; }
 
-void GLview::centerVerticesTangentially()
-{
-    cout << "implement centerVerticesTangentially()\n";
-}
+void GLview::centerVerticesTangentially() { cout << "implement centerVerticesTangentially()\n"; }
 
-void GLview::sharpen()
-{
+void GLview::sharpen() {
   vector<Vertex> out;
   out.resize(mesh->vertices.size());
   for (int i = 0; i < mesh->vertices.size(); i++) {
@@ -421,19 +403,19 @@ void GLview::sharpen()
     double variance2 = sigma * sigma * 2.0;
     float totalWeight = 0;
     float weight;
-    
+
     vector<float> weights; // weights of the neighboring vertices
     weights.resize(v.edges.size());
 
     weight = 1 / sqrt(M_PI * variance2); // weight of the vertex being processed
     totalWeight += weight;
-    out[i].v += weight*v.v;
+    out[i].v += weight * v.v;
 
     for (int j = 0; j < v.edges.size(); j++) {
-        float distance = (v.v - mesh->vertices[v.edges[j]].v).length();
-        weight = exp(-(distance*distance) / variance2) / sqrt(M_PI * variance2);
-        totalWeight += weight;
-        out[i].v += weight*mesh->vertices[v.edges[j]].v;
+      float distance = (v.v - mesh->vertices[v.edges[j]].v).length();
+      weight = exp(-(distance * distance) / variance2) / sqrt(M_PI * variance2);
+      totalWeight += weight;
+      out[i].v += weight * mesh->vertices[v.edges[j]].v;
     }
     // Normalize the summed coordinates so that the weights sum to 1
     out[i].v /= totalWeight;
@@ -446,30 +428,15 @@ void GLview::sharpen()
   update_mesh();
 }
 
-void GLview::truncate()
-{
-    cout << "implement truncate()\n";
-}
+void GLview::truncate() { cout << "implement truncate()\n"; }
 
-void GLview::bilateralSmoothing()
-{
-    cout << "implement bilateralSmoothing()\n";
-}
+void GLview::bilateralSmoothing() { cout << "implement bilateralSmoothing()\n"; }
 
-void GLview::meshSimplification()
-{
-    cout << "implement meshSimplification()\n";
-}
+void GLview::meshSimplification() { cout << "implement meshSimplification()\n"; }
 
-void GLview::loopSubdivision()
-{
-    cout << "implement loopSubdivision()\n";
-}
+void GLview::loopSubdivision() { cout << "implement loopSubdivision()\n"; }
 
-void GLview::flipEdges()
-{
-  cout << "implement flipEdges()\n";
-}
+void GLview::flipEdges() { cout << "implement flipEdges()\n"; }
 
 void GLview::smooth() {
   vector<Vertex> out;
@@ -480,19 +447,19 @@ void GLview::smooth() {
     double variance2 = sigma * sigma * 2.0;
     float totalWeight = 0;
     float weight;
-    
+
     vector<float> weights; // weights of the neighboring vertices
     weights.resize(v.edges.size());
 
     weight = 1 / sqrt(M_PI * variance2); // weight of the vertex being processed
     totalWeight += weight;
-    out[i].v += weight*v.v;
+    out[i].v += weight * v.v;
 
     for (int j = 0; j < v.edges.size(); j++) {
-        float distance = (v.v - mesh->vertices[v.edges[j]].v).length();
-        weight = exp(-(distance*distance) / variance2) / sqrt(M_PI * variance2);
-        totalWeight += weight;
-        out[i].v += weight*mesh->vertices[v.edges[j]].v;
+      float distance = (v.v - mesh->vertices[v.edges[j]].v).length();
+      weight = exp(-(distance * distance) / variance2) / sqrt(M_PI * variance2);
+      totalWeight += weight;
+      out[i].v += weight * mesh->vertices[v.edges[j]].v;
     }
     // Normalize the summed coordinates so that the weights sum to 1
     out[i].v /= totalWeight;
