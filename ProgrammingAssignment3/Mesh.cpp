@@ -15,6 +15,36 @@ void Mesh::add_unique_edge(int v0, int v1) {
   vertices[v1].edges.push_back(v0);
 }
 
+// Splits an edge and returns the index of the vertex created between them
+int Mesh::split_edge(int v0, int v1) {
+  Vertex midpoint = Vertex((vertices[v0].v + vertices[v1].v) / 2);
+  int idx = vertices.size();
+  for (int i = 0; i < vertices[v0].edges.size(); i++) {
+    if (vertices[v0].edges[i] == v1) {
+      vertices[v0].edges[i] = idx;
+      break;
+    }
+  }
+  for (int i = 0; i < vertices[v1].edges.size(); i++) {
+    if (vertices[v1].edges[i] == v0) {
+      vertices[v1].edges[i] = idx;
+      break;
+    }
+  }
+  midpoint.edges.push_back(v0);
+  midpoint.edges.push_back(v1);
+  // Add the two faces that both vertices share
+  for (int i = 0; i < vertices[v0].faces.size(); i++) {
+    for (int j = 0; j < vertices[v1].faces.size(); j++) {
+      if (vertices[v0].faces[i] == vertices[v1].faces[j]) {
+        midpoint.faces.push_back(vertices[v0].faces[i]);
+      }
+    }
+  }
+  vertices.push_back(midpoint);
+  return idx;
+}
+
 void Mesh::add_face(const vector<int> &cur_vert) {
   int v0 = cur_vert[0], v1 = cur_vert[1], v2 = cur_vert[2];
 

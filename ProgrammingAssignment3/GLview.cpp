@@ -4,6 +4,7 @@
 #include <cmath>
 #include <limits>
 #include <math.h>
+#include <unordered_map>
 #include <time.h>
 
 using namespace std;
@@ -382,7 +383,59 @@ void GLview::randomNoise() {
   update_mesh();
 }
 
-void GLview::splitFaces() { cout << "implement splitFaces()\n"; }
+void GLview::splitFaces() {
+  unordered_map<int, int> edgesSplit;
+  int size = mesh->faces.size();
+  for (int i = 0; i < size; i++) {
+    Mesh_Face &f = mesh->faces[i];
+    long midpoints [3];
+    for (int j0 = 0; j0 < 3; j0++) {
+      int j1 = j0 == 2 ? 0 : j0 + 1;
+      // Use Knuth's hash on the indices to keep track of split edges
+      int key = (min(f.vert[j0], f.vert[j1]) * 2654435761U) ^ max(f.vert[j0], f.vert[j1]);
+      unordered_map<int,int>::const_iterator value = edgesSplit.find(key);
+      if (value == edgesSplit.end()) {
+        edgesSplit[key] = midpoints[j0] = mesh->split_edge(f.vert[j0], f.vert[j1]);
+      } else {
+        midpoints[j0] = value->second;
+      }
+    }
+    // Make the new faces
+    Vertex &v0 = mesh->vertices[f.vert[0]];
+    Vertex &v1 = mesh->vertices[f.vert[1]];
+    Vertex &v2 = mesh->vertices[f.vert[2]];
+    
+    Mesh_Face f0 = Mesh_Face(f.vert[0], midpoints[0], midpoints[2]); //     v0    
+    Mesh_Face f1 = Mesh_Face(f.vert[1], midpoints[1], midpoints[0]); //   m0  m2  
+    Mesh_Face f2 = Mesh_Face(f.vert[2], midpoints[2], midpoints[1]); // v1  m1  v2
+    // Update the old face with the new middle face
+    f.vert[0] = midpoints[0];
+    f.vert[1] = midpoints[1];
+    f.vert[2] = midpoints[2];
+    for (int j = 0; j < v0.faces.size(); j++) {
+      if (v0.faces[j] == i) {
+        v0.faces[j] = mesh->faces.size();
+        break;
+      }
+    }
+    mesh->faces.push_back(f0);
+    for (int j = 0; j < v1.faces.size(); j++) {
+      if (v1.faces[j] == i) {
+        v1.faces[j] = mesh->faces.size();
+        break;
+      }
+    }
+    mesh->faces.push_back(f1);
+    for (int j = 0; j < v2.faces.size(); j++) {
+      if (v2.faces[j] == i) {
+        v2.faces[j] = mesh->faces.size();
+        break;
+      }
+    }
+    mesh->faces.push_back(f2);
+  }
+  update_mesh();
+}
 
 void GLview::starFaces() { cout << "implement starFaces()\n"; }
 

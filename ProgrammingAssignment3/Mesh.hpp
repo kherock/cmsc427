@@ -19,6 +19,7 @@ struct Mesh_Face {
 
 struct Vertex {
   Vertex() { v = QVector3D(); }
+  Vertex(QVector3D vec) { v = vec; }
   Vertex(float x, float y, float z) { v = QVector3D(x, y, z); }
 
   QVector3D v;
@@ -39,6 +40,7 @@ struct Mesh {
   void updateVertices();
   void recenter();
   void add_unique_edge(int v0, int v1);
+  int split_edge(int v0, int v1);
   void add_face(const vector<int> &cur_vert);
   void process_example();
 };
