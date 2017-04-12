@@ -398,7 +398,7 @@ void GLview::splitFaces() {
       int v1 = (v0 + 1) % 3;
       // Use Knuth's hash on the indices to keep track of split edges
       int key = (min(f.vert[v0], f.vert[v1]) * 2654435761U) ^ max(f.vert[v0], f.vert[v1]);
-      unordered_map<int,int>::const_iterator value = edgesSplit.find(key);
+      auto value = edgesSplit.find(key);
       if (value == edgesSplit.end()) {
         edgesSplit[key] = midpoints[v0] = mesh->split_edge(f.vert[v0], f.vert[v1]);
       } else {
@@ -414,6 +414,8 @@ void GLview::splitFaces() {
           break;
         }
       }
+      mesh->vertices[midpoints[j]].faces.push_back(mesh->faces.size());
+      mesh->vertices[midpoints[(j + 2) % 3]].faces.push_back(mesh->faces.size());
       mesh->faces.push_back(Mesh_Face(f.vert[j], midpoints[j], midpoints[(j + 2) % 3]));
     }
     // Update the old face to become the new center face
@@ -488,7 +490,6 @@ void GLview::splitLongEdges() {
               break;
             }
           }
-          // mesh->computeAvgEdgeLen(f.vert[vert]);
         }
         edges.push_front(make_pair(i->second, split));
         i->second = split;
@@ -544,7 +545,66 @@ void GLview::bilateralSmoothing() { cout << "implement bilateralSmoothing()\n"; 
 
 void GLview::meshSimplification() { cout << "implement meshSimplification()\n"; }
 
-void GLview::loopSubdivision() { cout << "implement loopSubdivision()\n"; }
+void GLview::loopSubdivision() {
+  vector<Vertex> vertices = mesh->vertices;
+  unordered_map<int, int> edgesSplit;
+  // Compute odd vertices and create faces
+  int len = (int)mesh->faces.size();
+  for (int i = 0; i < len; i++) {
+    mesh->faces.reserve(mesh->faces.size() + 3);
+    Mesh_Face &f = mesh->faces[i];
+    long midpoints [3];
+    for (int v0 = 0; v0 < 3; v0++) {
+      int v1 = (v0 + 1) % 3;
+      // Use Knuth's hash on the indices to keep track of split edges
+      int key = (min(f.vert[v0], f.vert[v1]) * 2654435761U) ^ max(f.vert[v0], f.vert[v1]);
+      auto value = edgesSplit.find(key);
+      if (value == edgesSplit.end()) {
+        edgesSplit[key] = midpoints[v0] = mesh->split_edge(f.vert[v0], f.vert[v1]);
+        Vertex &midpoint = mesh->vertices[midpoints[v0]];
+        midpoint.v = (vertices[f.vert[v0]].v + vertices[f.vert[v1]].v) * 3 / 8;
+        for (auto mid_f = midpoint.faces.begin(); mid_f != midpoint.faces.end(); ++mid_f) {
+          for (int v2 = 0; v2 < 3; v2++) {
+            if (mesh->faces[*mid_f].vert[v2] != f.vert[v0] && mesh->faces[*mid_f].vert[v2] != f.vert[v1]) {
+              midpoint.v += vertices[mesh->faces[*mid_f].vert[v2]].v / 8;
+              break;
+            }
+          }
+        }
+      } else {
+        midpoints[v0] = value->second;
+      }
+    }
+
+    // Make the new faces
+    for (int j = 0; j < 3; j++) {
+      Vertex &v = mesh->vertices[f.vert[j]];
+      for (int k = 0; k < v.faces.size(); k++) {
+        if (v.faces[k] == i) {
+          v.faces[k] = (long)mesh->faces.size();
+          break;
+        }
+      }
+      mesh->vertices[midpoints[j]].faces.push_back(mesh->faces.size());
+      mesh->vertices[midpoints[(j + 2) % 3]].faces.push_back(mesh->faces.size());
+      mesh->faces.push_back(Mesh_Face(f.vert[j], midpoints[j], midpoints[(j + 2) % 3]));
+    }
+    // Update the old face to become the new center face
+    copy(midpoints, midpoints + 3, f.vert);
+  }
+  // Compute even vertices
+  for (int i = 0; i < vertices.size(); i++) {
+    Vertex &v0 = mesh->vertices[i];
+    float beta = v0.edges.size() > 3
+        ? 3. / (8 * v0.edges.size())
+        : 3. / 16;
+    v0.v = (1. - v0.edges.size() * beta) * vertices[i].v;
+    for (auto v1 = vertices[i].edges.begin(); v1 != vertices[i].edges.end(); ++v1) {
+      v0.v += beta * vertices[*v1].v;
+    }
+  }
+  update_mesh();
+}
 
 void GLview::flipEdges() { cout << "implement flipEdges()\n"; }
 
