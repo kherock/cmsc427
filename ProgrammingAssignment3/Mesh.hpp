@@ -37,7 +37,8 @@ struct Mesh {
 
   bool load_obj(QString filename);
   void storeVBO();
-  void updateVertices();
+  void computeAvgEdgeLen(int v);
+  void computeVertexNormal(int v);
   void recenter();
   void add_unique_edge(int v0, int v1);
   int split_edge(int v0, int v1);

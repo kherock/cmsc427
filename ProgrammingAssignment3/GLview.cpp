@@ -283,6 +283,7 @@ void GLview::process_example()
 {
     if(mesh == NULL) return;
     mesh->process_example();
+    mesh->recenter();
     update_mesh();
 }
 
@@ -292,7 +293,10 @@ void GLview::update_mesh()
     if(mesh == NULL) return;
     makeCurrent();
     mesh->storeVBO();
-    mesh->updateVertices();
+    for (int i = 0; i < mesh->vertices.size(); i++) {
+        mesh->computeAvgEdgeLen(i);
+        mesh->computeVertexNormal(i);
+    }
 
     // Update VBOs associated with shaders.
     wire_shader.bind();
@@ -385,12 +389,12 @@ void GLview::randomNoise() {
 
 void GLview::splitFaces() {
   unordered_map<int, int> edgesSplit;
-  int size = mesh->faces.size();
-  for (int i = 0; i < size; i++) {
+  int len = (int)mesh->faces.size();
+  for (int i = 0; i < len; i++) {
     Mesh_Face &f = mesh->faces[i];
     long midpoints [3];
     for (int j0 = 0; j0 < 3; j0++) {
-      int j1 = j0 == 2 ? 0 : j0 + 1;
+      int j1 = (j0 + 1) % 3;
       // Use Knuth's hash on the indices to keep track of split edges
       int key = (min(f.vert[j0], f.vert[j1]) * 2654435761U) ^ max(f.vert[j0], f.vert[j1]);
       unordered_map<int,int>::const_iterator value = edgesSplit.find(key);
@@ -408,27 +412,27 @@ void GLview::splitFaces() {
     Mesh_Face f0 = Mesh_Face(f.vert[0], midpoints[0], midpoints[2]); //     v0    
     Mesh_Face f1 = Mesh_Face(f.vert[1], midpoints[1], midpoints[0]); //   m0  m2  
     Mesh_Face f2 = Mesh_Face(f.vert[2], midpoints[2], midpoints[1]); // v1  m1  v2
-    // Update the old face with the new middle face
+    // Update the old face to become the new center face
     f.vert[0] = midpoints[0];
     f.vert[1] = midpoints[1];
     f.vert[2] = midpoints[2];
     for (int j = 0; j < v0.faces.size(); j++) {
       if (v0.faces[j] == i) {
-        v0.faces[j] = mesh->faces.size();
+        v0.faces[j] = (long)mesh->faces.size();
         break;
       }
     }
     mesh->faces.push_back(f0);
     for (int j = 0; j < v1.faces.size(); j++) {
       if (v1.faces[j] == i) {
-        v1.faces[j] = mesh->faces.size();
+        v1.faces[j] = (long)mesh->faces.size();
         break;
       }
     }
     mesh->faces.push_back(f1);
     for (int j = 0; j < v2.faces.size(); j++) {
       if (v2.faces[j] == i) {
-        v2.faces[j] = mesh->faces.size();
+        v2.faces[j] = (long)mesh->faces.size();
         break;
       }
     }
@@ -439,7 +443,79 @@ void GLview::splitFaces() {
 
 void GLview::starFaces() { cout << "implement starFaces()\n"; }
 
-void GLview::splitLongEdges() { cout << "implement splitLongEdges()\n"; }
+void GLview::splitLongEdges() {
+  list<pair<int, int>> edges;
+  for (int i = 0; i < mesh->vertices.size(); i++) {
+    Vertex &v0 = mesh->vertices[i];
+    for (int j = 0; j < v0.edges.size(); j++) {
+      if (i < v0.edges[j]) {
+        edges.push_front(make_pair(i, v0.edges[j]));
+      }
+    }
+  }
+  bool done = false;
+
+  // Run insertion sort
+  if (edges.size() < 10000) for (auto i = ++edges.begin(); i != edges.end(); ++i) {
+    float a = (mesh->vertices[i->first].v - mesh->vertices[i->second].v).length();
+    for (auto j = i; j != edges.begin(); --j) {
+      auto prev = j;
+      --prev;
+      float b = (mesh->vertices[prev->first].v - mesh->vertices[prev->second].v).length();
+      if (a >= b) {
+        edges.splice(j, edges, i);
+        break;
+      } else if (prev == edges.begin()) {
+        edges.splice(edges.begin(), edges, i);
+        break;
+      }
+    }
+  }
+  while (!done) {
+    done = true;
+    for (auto i = edges.rbegin(); i != edges.rend(); ++i) {
+      Vertex &v0 = mesh->vertices[i->first];
+      Vertex &v1 = mesh->vertices[i->second];
+      if ((v0.v - v1.v).length() > min(v0.avgEdgeLen, v1.avgEdgeLen) * 4 / 3) {
+        done = false;
+        // Split the edge when it's longer than 4/3 the average edge length of either vertex
+        int split = mesh->split_edge(i->first, i->second);
+        Vertex &midpoint = mesh->vertices[split];
+        // Split each of the 0-2 faces adjacent to the midpoint
+        int faces_len = (int)midpoint.faces.size();
+        for (int i_f = 0; i_f < faces_len; i_f++) {
+          int idx = (int)mesh->faces.size();
+          mesh->faces.resize(idx + 1);
+          Mesh_Face &f = mesh->faces[midpoint.faces[i_f]];
+          // This vertex is shared by both faces
+          int vert = 0;
+          while (f.vert[vert] == i->first || f.vert[vert] == i->second) vert++;
+          // Create the edge
+          midpoint.edges.push_back(f.vert[vert]);
+          mesh->vertices[f.vert[vert]].edges.push_back(split);
+          // Replace the vertex in f counterclockwise from it with the split point
+          int ccw = f.vert[(vert + 1) % 3];
+          f.vert[(vert + 1) % 3] = split;
+          // and make it part of the new face
+          mesh->faces[idx] = Mesh_Face(f.vert[vert], ccw, split);
+          mesh->vertices[f.vert[vert]].faces.push_back(idx);
+          midpoint.faces.push_back(idx);
+          // Swap f's index with the new face's idx for this vertex
+          for (int j_f = 0; j_f < mesh->vertices[ccw].faces.size(); j_f++) {
+            if (mesh->vertices[ccw].faces[j_f] == midpoint.faces[i_f]) {
+              mesh->vertices[ccw].faces[j_f] = idx;
+              break;
+            }
+          }
+          // mesh->computeAvgEdgeLen(f.vert[vert]);
+        }
+        edges.push_front(make_pair(i->second, split));
+        i->second = split;
+      }
+    }
+  }
+  update_mesh();
+}
 
 void GLview::collapseShortEdges() { cout << "implement collapseShortEdges()\n"; }
 

@@ -33,6 +33,7 @@ int Mesh::split_edge(int v0, int v1) {
   }
   midpoint.edges.push_back(v0);
   midpoint.edges.push_back(v1);
+  midpoint.avgEdgeLen = FLT_MAX;
   // Add the two faces that both vertices share
   for (int i = 0; i < vertices[v0].faces.size(); i++) {
     for (int j = 0; j < vertices[v1].faces.size(); j++) {
@@ -188,54 +189,36 @@ void Mesh::storeVBO() {
   baryBuffer.allocate(&tri_bary[0], sizeof(QVector3D) * tri_bary.size());
 }
 
-// Calculates the average edge lengths and normal for every vertex in the mesh
-void Mesh::updateVertices() {
-  for (int i = 0; i < vertices.size(); i++) {
-    // Compute average edge length
-    Vertex &v0 = vertices[i];
-    for (int j = 0; j < v0.edges.size(); j++) {
-      Vertex &v1 = vertices[v0.edges[j]];
-      v0.avgEdgeLen = (v0.avgEdgeLen * j + (v0.v - v1.v).length()) / (j + 1);
-    }
-
-    // Compute normal, weighted by the area of each associated face
-    v0.normal = QVector3D();
-    for (int j = 0; j < v0.faces.size(); j++) {
-      Mesh_Face &f = faces[v0.faces[j]];
-      int idx = 0;
-      while (f.vert[idx] != i) idx++;
-
-      // Get the neighboring vertices that make up this face
-      // The vertices are assumed to be defined in a counterclockwise order
-      Vertex *v1, *v2;
-      switch (idx) {
-      case 0:
-        v1 = &vertices[f.vert[1]];
-        v2 = &vertices[f.vert[2]];
-        break;
-      case 1:
-        v1 = &vertices[f.vert[2]];
-        v2 = &vertices[f.vert[0]];
-        break;
-      case 2:
-        v1 = &vertices[f.vert[0]];
-        v2 = &vertices[f.vert[1]];
-        break;
-      }
-
-      QVector3D a = v0.v - v1->v;
-      QVector3D b = v0.v - v2->v;
-      QVector3D c = v1->v - v2->v;
-
-      QVector3D crossProduct = QVector3D(
-          a.y() * b.z() - a.z() * b.y(),
-          a.z() * b.x() - a.x() * b.z(),
-          a.x() * b.y() - a.y() * b.x()
-      ).normalized();
-      // Use Heron's formula to get the area of the face
-      float s = 0.5 * (a.length() + b.length() + c.length());
-      v0.normal += crossProduct * sqrt(s * (s - a.length()) * (s - b.length()) * (s - c.length()));
-    }
-    v0.normal.normalize();
+// Computes and stores a vertex's average edge length
+void Mesh::computeAvgEdgeLen(int v) {
+  Vertex &v0 = vertices[v];
+  for (int j = 0; j < v0.edges.size(); j++) {
+    Vertex &v1 = vertices[v0.edges[j]];
+    v0.avgEdgeLen = (v0.avgEdgeLen * j + (v0.v - v1.v).length()) / (j + 1);
   }
+}
+
+// Computes and stores normal for a vertex, weighted by the area of each associated face
+void Mesh::computeVertexNormal(int v) {
+  Vertex &v0 = vertices[v];
+  v0.normal = QVector3D();
+  for (int i = 0; i < v0.faces.size(); i++) {
+    Mesh_Face &f = faces[v0.faces[i]];
+    int idx = 0;
+    while (f.vert[idx] != v) idx++;
+
+    // Get the neighboring vertices that make up this face
+    Vertex &v1 = vertices[f.vert[(idx + 1) % 3]];
+    Vertex &v2 = vertices[f.vert[(idx + 2) % 3]];
+
+    QVector3D a = v0.v - v1.v;
+    QVector3D b = v0.v - v2.v;
+    QVector3D c = v1.v - v2.v;
+
+    QVector3D crossProduct = QVector3D::crossProduct(a, b).normalized();
+    // Use Heron's formula to get the area of the face
+    float s = 0.5 * (a.length() + b.length() + c.length());
+    v0.normal += crossProduct * sqrt(s * (s - a.length()) * (s - b.length()) * (s - c.length()));
+  }
+  v0.normal.normalize();
 }
