@@ -391,52 +391,33 @@ void GLview::splitFaces() {
   unordered_map<int, int> edgesSplit;
   int len = (int)mesh->faces.size();
   for (int i = 0; i < len; i++) {
+    mesh->faces.reserve(mesh->faces.size() + 3);
     Mesh_Face &f = mesh->faces[i];
     long midpoints [3];
-    for (int j0 = 0; j0 < 3; j0++) {
-      int j1 = (j0 + 1) % 3;
+    for (int v0 = 0; v0 < 3; v0++) {
+      int v1 = (v0 + 1) % 3;
       // Use Knuth's hash on the indices to keep track of split edges
-      int key = (min(f.vert[j0], f.vert[j1]) * 2654435761U) ^ max(f.vert[j0], f.vert[j1]);
+      int key = (min(f.vert[v0], f.vert[v1]) * 2654435761U) ^ max(f.vert[v0], f.vert[v1]);
       unordered_map<int,int>::const_iterator value = edgesSplit.find(key);
       if (value == edgesSplit.end()) {
-        edgesSplit[key] = midpoints[j0] = mesh->split_edge(f.vert[j0], f.vert[j1]);
+        edgesSplit[key] = midpoints[v0] = mesh->split_edge(f.vert[v0], f.vert[v1]);
       } else {
-        midpoints[j0] = value->second;
+        midpoints[v0] = value->second;
       }
     }
     // Make the new faces
-    Vertex &v0 = mesh->vertices[f.vert[0]];
-    Vertex &v1 = mesh->vertices[f.vert[1]];
-    Vertex &v2 = mesh->vertices[f.vert[2]];
-    
-    Mesh_Face f0 = Mesh_Face(f.vert[0], midpoints[0], midpoints[2]); //     v0    
-    Mesh_Face f1 = Mesh_Face(f.vert[1], midpoints[1], midpoints[0]); //   m0  m2  
-    Mesh_Face f2 = Mesh_Face(f.vert[2], midpoints[2], midpoints[1]); // v1  m1  v2
+    for (int j = 0; j < 3; j++) {
+      Vertex &v = mesh->vertices[f.vert[j]];
+      for (int k = 0; k < v.faces.size(); k++) {
+        if (v.faces[k] == i) {
+          v.faces[k] = (long)mesh->faces.size();
+          break;
+        }
+      }
+      mesh->faces.push_back(Mesh_Face(f.vert[j], midpoints[j], midpoints[(j + 2) % 3]));
+    }
     // Update the old face to become the new center face
-    f.vert[0] = midpoints[0];
-    f.vert[1] = midpoints[1];
-    f.vert[2] = midpoints[2];
-    for (int j = 0; j < v0.faces.size(); j++) {
-      if (v0.faces[j] == i) {
-        v0.faces[j] = (long)mesh->faces.size();
-        break;
-      }
-    }
-    mesh->faces.push_back(f0);
-    for (int j = 0; j < v1.faces.size(); j++) {
-      if (v1.faces[j] == i) {
-        v1.faces[j] = (long)mesh->faces.size();
-        break;
-      }
-    }
-    mesh->faces.push_back(f1);
-    for (int j = 0; j < v2.faces.size(); j++) {
-      if (v2.faces[j] == i) {
-        v2.faces[j] = (long)mesh->faces.size();
-        break;
-      }
-    }
-    mesh->faces.push_back(f2);
+    copy(midpoints, midpoints + 3, f.vert);
   }
   update_mesh();
 }
