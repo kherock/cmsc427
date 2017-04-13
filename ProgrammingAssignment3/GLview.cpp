@@ -388,6 +388,7 @@ void GLview::randomNoise() {
 }
 
 void GLview::splitFaces() {
+  if (mesh == NULL) return;
   unordered_map<int, int> edgesSplit;
   int len = (int)mesh->faces.size();
   for (int i = 0; i < len; i++) {
@@ -430,6 +431,7 @@ void GLview::splitFaces() {
 void GLview::starFaces() { cout << "implement starFaces()\n"; }
 
 void GLview::splitLongEdges() {
+  if (mesh == NULL) return;
   list<pair<int, int>> edges;
   for (int i = 0; i < mesh->vertices.size(); i++) {
     Vertex &v0 = mesh->vertices[i];
@@ -509,6 +511,7 @@ void GLview::crop() { cout << "implement crop()\n"; }
 void GLview::centerVerticesTangentially() { cout << "implement centerVerticesTangentially()\n"; }
 
 void GLview::sharpen() {
+  if (mesh == NULL) return;
   vector<Vertex> out(mesh->vertices.size());
   for (int i = 0; i < mesh->vertices.size(); i++) {
     Vertex &v = mesh->vertices[i];
@@ -548,6 +551,7 @@ void GLview::bilateralSmoothing() { cout << "implement bilateralSmoothing()\n"; 
 void GLview::meshSimplification() { cout << "implement meshSimplification()\n"; }
 
 void GLview::loopSubdivision() {
+  if (mesh == NULL) return;
   vector<Vertex> vertices = mesh->vertices;
   unordered_map<int, int> edgesSplit;
   // Compute odd vertices and create faces
@@ -612,6 +616,7 @@ void GLview::loopSubdivision() {
 }
 
 void GLview::flipEdges() {
+  if (mesh == NULL) return;
   const int iterations = 3;
   srand(time(NULL));
   for (int n = 0; n < iterations; n++) {
@@ -685,6 +690,7 @@ void GLview::flipEdges() {
 }
 
 void GLview::smooth() {
+  if (mesh == NULL) return;
   vector<Vertex> out(mesh->vertices.size());
   for (int i = 0; i < mesh->vertices.size(); i++) {
     Vertex &v = mesh->vertices[i];
