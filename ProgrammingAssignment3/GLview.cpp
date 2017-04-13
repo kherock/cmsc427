@@ -420,6 +420,9 @@ void GLview::splitFaces() {
     }
     // Update the old face to become the new center face
     copy(midpoints, midpoints + 3, f.vert);
+    mesh->add_unique_edge(midpoints[0], midpoints[1]);
+    mesh->add_unique_edge(midpoints[0], midpoints[2]);
+    mesh->add_unique_edge(midpoints[1], midpoints[2]);
   }
   update_mesh();
 }
@@ -506,8 +509,7 @@ void GLview::crop() { cout << "implement crop()\n"; }
 void GLview::centerVerticesTangentially() { cout << "implement centerVerticesTangentially()\n"; }
 
 void GLview::sharpen() {
-  vector<Vertex> out;
-  out.resize(mesh->vertices.size());
+  vector<Vertex> out(mesh->vertices.size());
   for (int i = 0; i < mesh->vertices.size(); i++) {
     Vertex &v = mesh->vertices[i];
     float sigma = mesh->vertices[i].avgEdgeLen;
@@ -515,8 +517,8 @@ void GLview::sharpen() {
     float totalWeight = 0;
     float weight;
 
-    vector<float> weights; // weights of the neighboring vertices
-    weights.resize(v.edges.size());
+    // weights of the neighboring vertices
+    vector<float> weights(v.edges.size());
 
     weight = 1 / sqrt(M_PI * variance2); // weight of the vertex being processed
     totalWeight += weight;
@@ -591,6 +593,9 @@ void GLview::loopSubdivision() {
     }
     // Update the old face to become the new center face
     copy(midpoints, midpoints + 3, f.vert);
+    mesh->add_unique_edge(midpoints[0], midpoints[1]);
+    mesh->add_unique_edge(midpoints[0], midpoints[2]);
+    mesh->add_unique_edge(midpoints[1], midpoints[2]);
   }
   // Compute even vertices
   for (int i = 0; i < vertices.size(); i++) {
@@ -606,11 +611,81 @@ void GLview::loopSubdivision() {
   update_mesh();
 }
 
-void GLview::flipEdges() { cout << "implement flipEdges()\n"; }
+void GLview::flipEdges() {
+  const int iterations = 3;
+  srand(time(NULL));
+  for (int n = 0; n < iterations; n++) {
+    for (int i = 0; i < mesh->vertices.size(); i++) {
+      Vertex &v = mesh->vertices[i];
+      if (v.edges.size() <= 6) continue;
+      // Choose a random face to participate in the split
+      int f0_idx = v.faces[(rand() / (RAND_MAX + 1.0)) * v.faces.size()];
+      int f1_idx;
+      Mesh_Face *f0 = &mesh->faces[f0_idx];
+      Mesh_Face *f1 = NULL;
+
+      vector<int> newFace;
+      for (int j = 0; j < 3; j++) {
+        if (f0->vert[j] != i) newFace.push_back(f0->vert[j]);
+      }
+      if (newFace.size() < 2) continue;
+      if (i == f0->vert[1]) swap(newFace[0], newFace[1]);
+
+      // The second face is the next one counterclockwise around the vertex
+      for (auto it = v.faces.begin(); it != v.faces.end(); ++it) {
+        for (int j = 0; j < 3; j++) {
+          if (mesh->faces[*it].vert[j] == i && mesh->faces[*it].vert[(j + 1) % 3] == newFace[1]) {
+            newFace.push_back(mesh->faces[*it].vert[(j + 2) % 3]);
+            f1_idx = *it;
+            f1 = &mesh->faces[f1_idx];
+          }
+        }
+      }
+      if (newFace.size() < 3) continue; // Flipping isn't always possible with 2D meshes
+
+      // Redefine the faces
+      for (int j = 0; j < 3; j++) {
+        if (f0->vert[j] == i) f0->vert[(j + 2) % 3] = newFace[2];
+      }
+      for (int j = 0; j < 3; j++) {
+        if (f1->vert[j] == i) f1->vert[j] = newFace[0];
+      }
+
+      // Cleanup changed vertices
+      mesh->add_unique_edge(newFace[0], newFace[2]);
+      mesh->vertices[newFace[0]].faces.push_back(f1_idx);
+      mesh->vertices[newFace[2]].faces.push_back(f0_idx);
+      for (auto j = v.edges.begin(); j != v.edges.end(); ++j) {
+        if (*j == newFace[1]) {
+          v.edges.erase(j);
+          break;
+        }
+      }
+      for (auto j = mesh->vertices[newFace[1]].edges.begin(); j != mesh->vertices[newFace[1]].edges.end(); ++j) {
+        if (*j == i) {
+          mesh->vertices[newFace[1]].edges.erase(j);
+          break;
+        }
+      }
+      for (auto j = v.faces.begin(); j != v.faces.end(); ++j) {
+        if (*j == f1_idx) {
+          v.faces.erase(j);
+          break;
+        }
+      }
+      for (auto j = mesh->vertices[newFace[1]].faces.begin(); j != mesh->vertices[newFace[1]].faces.end(); ++j) {
+        if (*j == f0_idx) {
+          mesh->vertices[newFace[1]].faces.erase(j);
+          break;
+        }
+      }
+    }
+  }
+  update_mesh();
+}
 
 void GLview::smooth() {
-  vector<Vertex> out;
-  out.resize(mesh->vertices.size());
+  vector<Vertex> out(mesh->vertices.size());
   for (int i = 0; i < mesh->vertices.size(); i++) {
     Vertex &v = mesh->vertices[i];
     float sigma = mesh->vertices[i].avgEdgeLen;
@@ -618,8 +693,8 @@ void GLview::smooth() {
     float totalWeight = 0;
     float weight;
 
-    vector<float> weights; // weights of the neighboring vertices
-    weights.resize(v.edges.size());
+    // weights of the neighboring vertices
+    vector<float> weights(v.edges.size());
 
     weight = 1 / sqrt(M_PI * variance2); // weight of the vertex being processed
     totalWeight += weight;
