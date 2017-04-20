@@ -14,7 +14,7 @@ void Mesh::add_face(vector<int> &cur_vert, vector<int> &cur_vt, int mtl_idx, int
     int t0 = cur_vt[0], t1 = cur_vt[1], t2 = cur_vt[2];
 
     faces.push_back(Mesh_Face(v0, v1, v2, 
-			      t0, t2, t2, mtl_idx, group_idx));
+                              t0, t2, t2, mtl_idx, group_idx));
     // First face
     for( size_t i = 3; i < cur_vert.size(); i++ ) {
       v1 = v2; v2 = cur_vert[i];
@@ -24,8 +24,8 @@ void Mesh::add_face(vector<int> &cur_vert, vector<int> &cur_vt, int mtl_idx, int
   }
   else if(cur_vert.size() == 3) { 
     faces.push_back(Mesh_Face(cur_vert[0], cur_vert[1], cur_vert[2], 
-			      cur_vt[0], cur_vt[1], cur_vt[2], 
-			      mtl_idx, group_idx));
+                              cur_vt[0], cur_vt[1], cur_vt[2], 
+                              mtl_idx, group_idx));
   }
 }
 
@@ -76,21 +76,21 @@ bool Mesh::load_obj(QString filename, QString dir) {
     if(tokens[0] == "f") {
       vector<int> cur_vert, cur_vt;
       for(int i = 1; i < tokens.size(); i++) {
-	QStringList indexes = tokens[i].split("/");
-	if(indexes.size() >= 1) {
-	  if(indexes[0].toLong() < 0) {  cur_vert.push_back(vertices.size() + indexes[0].toLong()); }
-	  else { cur_vert.push_back(indexes[0].toLong() - 1); }
-	  if(indexes.size() >= 2) {
-	    if(indexes[1] == "") cur_vt.push_back(-1);
-	    else {
-	      if(indexes[1].toLong() < 0) { cur_vt.push_back(texCoords.size() + indexes[1].toLong()); }
-	      else { cur_vt.push_back(indexes[1].toLong() - 1); }
-	    }
-	  }
-	  else {
-	    cur_vt.push_back(-1);
-	  }
-	}
+        QStringList indexes = tokens[i].split("/");
+        if(indexes.size() >= 1) {
+          if(indexes[0].toLong() < 0) {  cur_vert.push_back((int)vertices.size() + indexes[0].toLong()); }
+          else { cur_vert.push_back(indexes[0].toLong() - 1); }
+          if(indexes.size() >= 2) {
+            if(indexes[1] == "") cur_vt.push_back(-1);
+            else {
+              if(indexes[1].toLong() < 0) { cur_vt.push_back((int)texCoords.size() + indexes[1].toLong()); }
+              else { cur_vt.push_back(indexes[1].toLong() - 1); }
+            }
+          }
+          else {
+            cur_vt.push_back(-1);
+          }
+        }
       }
       // NOTE: Group and material index are passed along with this face.
       face_cnt++;
@@ -110,11 +110,11 @@ bool Mesh::load_obj(QString filename, QString dir) {
       if(tokens.size() < 2) return false;
       QString mtl_name = tokens[1];
       for(long idx = 0; idx < (long)materials.size(); idx++) {
-	if(materials[idx].name == mtl_name) {
-	  cout << mtl_name.toStdString() << endl;
-	  mtl_idx = idx;
-	  break;
-	}
+        if(materials[idx].name == mtl_name) {
+          cout << mtl_name.toStdString() << endl;
+          mtl_idx = idx;
+          break;
+        }
       }
     }
     // Load in a group.
@@ -126,18 +126,18 @@ bool Mesh::load_obj(QString filename, QString dir) {
       // Check if group was found, and set grou pindex accordingly.
       bool group_found = false;
       for(long idx = 0; idx < (long)groups.size(); idx++) {
-	if(groups[idx].name == cur_group_name) {
-	  group_idx = idx;
-	  group_found = true;
-	  break;
-	}
+        if(groups[idx].name == cur_group_name) {
+          group_idx = idx;
+          group_found = true;
+          break;
+        }
       }
       // Otherwise this is a new group of verticies/normals/texture coordiantes.
       if(!group_found) {
-	group_idx = groups.size();
-	Mesh_Group cur_group;
-	cur_group.name = cur_group_name;
-	groups.push_back(cur_group);
+        group_idx = (long)groups.size();
+        Mesh_Group cur_group;
+        cur_group.name = cur_group_name;
+        groups.push_back(cur_group);
       }
     }
   }
@@ -175,7 +175,7 @@ bool Mesh::load_mtl(vector<Mesh_Material> &materials, QString filename, QString 
     if(tokens[0] == "newmtl") {
       if(tokens.size() < 2) return false;
       if(mat.name != "") {
-	materials.push_back(mat);
+        materials.push_back(mat);
       }
       mat.name = tokens[1];
     }
@@ -279,8 +279,8 @@ void Mesh::storeVBO_groups() {
       // Get face indexes that match current group and current material.
       vector<long> mtl_faces;
       for(long f = 0; f < (long)faces.size(); f++) {
-	if(faces[f].mtl_idx == mtl_idx && faces[f].group_idx == group_idx)
-	  mtl_faces.push_back(f);
+        if(faces[f].mtl_idx == mtl_idx && faces[f].group_idx == group_idx)
+          mtl_faces.push_back(f);
       }
       vector<QVector3D> tri_vert;
       vector<QVector3D> tri_norm;
@@ -288,23 +288,23 @@ void Mesh::storeVBO_groups() {
       // Collect triangles + normals + vertex coords for those matching
       // the current material and the current group.
       for(long mf = 0; mf < (long)mtl_faces.size(); mf++) {
-	long f = mtl_faces[mf];
-	tri_vert.push_back(vertices.at(faces[f].vert[0]));
-	tri_vert.push_back(vertices.at(faces[f].vert[1]));
-	tri_vert.push_back(vertices.at(faces[f].vert[2]));
+        long f = mtl_faces[mf];
+        tri_vert.push_back(vertices.at(faces[f].vert[0]));
+        tri_vert.push_back(vertices.at(faces[f].vert[1]));
+        tri_vert.push_back(vertices.at(faces[f].vert[2]));
 
-	tri_norm.push_back(normals.at(faces[f].vert[0]));
-	tri_norm.push_back(normals.at(faces[f].vert[1]));
-	tri_norm.push_back(normals.at(faces[f].vert[2]));
+        tri_norm.push_back(normals.at(faces[f].vert[0]));
+        tri_norm.push_back(normals.at(faces[f].vert[1]));
+        tri_norm.push_back(normals.at(faces[f].vert[2]));
 
-	if(faces[f].vt[0] >= 0) tri_tex.push_back(texCoords.at(faces[f].vt[0]));
-	else tri_tex.push_back(QVector2D(0,0));
+        if(faces[f].vt[0] >= 0) tri_tex.push_back(texCoords.at(faces[f].vt[0]));
+        else tri_tex.push_back(QVector2D(0,0));
 
-	if(faces[f].vt[1] >= 0) tri_tex.push_back(texCoords.at(faces[f].vt[1]));
-	else tri_tex.push_back(QVector2D(0,0));
+        if(faces[f].vt[1] >= 0) tri_tex.push_back(texCoords.at(faces[f].vt[1]));
+        else tri_tex.push_back(QVector2D(0,0));
       
-	if(faces[f].vt[2] >= 0) tri_tex.push_back(texCoords.at(faces[f].vt[2]));
-	else tri_tex.push_back(QVector2D(0,0));      
+        if(faces[f].vt[2] >= 0) tri_tex.push_back(texCoords.at(faces[f].vt[2]));
+        else tri_tex.push_back(QVector2D(0,0));      
       }
       // For the current group and the current material in that group, fill the
       // vertex, normal, and texture buffers. 

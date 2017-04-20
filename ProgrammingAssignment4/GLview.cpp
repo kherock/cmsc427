@@ -46,7 +46,7 @@ void GLview::initializeGL() {
   initializeOpenGLFunctions();
   vao.create(); if (vao.isCreated()) vao.bind();
 
-  glClearColor( 0.15, 0.15, 0.15, 1.0f );   // Set the clear color to black
+  glClearColor( 0.15f, 0.15f, 0.15f, 1.0f );   // Set the clear color to black
   glEnable(GL_DEPTH_TEST);    // Enable depth buffer
 
   // Prepare a complete shader program...
@@ -121,10 +121,10 @@ void GLview::paintGL() {
       
       // If a texture material, so use for drawing.
       if(materials[mtl_idx].map_Kd != NULL) {
-	shaders.setUniformValue("useTexture", true);
-	// Bind texture to texture unit 0.
-	materials[mtl_idx].map_Kd->bind(0); 
-	shaders.setUniformValue("Tex1", (int)0); // Update shader uniform.
+        shaders.setUniformValue("useTexture", true);
+        // Bind texture to texture unit 0.
+        materials[mtl_idx].map_Kd->bind(0); 
+        shaders.setUniformValue("Tex1", (int)0); // Update shader uniform.
       }
       // Starting at index 0, draw 3 * n_triangle verticies from current geometry buffers.
       glDrawArrays( GL_TRIANGLES, 0, 3 * materials[mtl_idx].n_triangles );
@@ -148,7 +148,7 @@ void GLview::keyPressGL(QKeyEvent* e) {
 
 // Compile shaders. DO NOT MODIFY.
 bool GLview::prepareShaderProgram(QOpenGLShaderProgram &prep_shader, 
-				  const QString &vertex_file, const QString &fragment_file) {
+                                  const QString &vertex_file, const QString &fragment_file) {
   // First we load and compile the vertex shader.
   bool result = prep_shader.addShaderFromSourceFile( QOpenGLShader::Vertex, vertex_file );
   if ( !result ) qWarning() << prep_shader.log();

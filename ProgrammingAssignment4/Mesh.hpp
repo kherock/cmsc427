@@ -14,9 +14,9 @@ struct Mesh_Material {
     // Default material values. 
     Ns = 100;
     is_texture = false; map_Kd = NULL;
-    Kd = QVector3D(0.8, 0.8, 0.8);
-    Ks = QVector3D(0.95, 0.95, 0.95);
-    Ka = QVector3D(0.1, 0.1, 0.1);
+    Kd = QVector3D(0.8f, 0.8f, 0.8f);
+    Ks = QVector3D(0.95f, 0.95f, 0.95f);
+    Ka = QVector3D(0.1f, 0.1f, 0.1f);
     vertexBuffer = normalBuffer = texCoordBuffer = NULL;
   }
   QString name;
@@ -32,7 +32,7 @@ struct Mesh_Material {
     if(tri_vert.size() != tri_norm.size()) return false;
     if(tri_vert.size() != tri_tex.size())  return false;
 
-    n_triangles = tri_vert.size() / 3;
+    n_triangles = (int)tri_vert.size() / 3;
 
     vertexBuffer = std::make_shared<QOpenGLBuffer>();
     normalBuffer = std::make_shared<QOpenGLBuffer>();
@@ -42,19 +42,19 @@ struct Mesh_Material {
     vertexBuffer->create();
     vertexBuffer->setUsagePattern( QOpenGLBuffer::StaticDraw );
     vertexBuffer->bind();
-    vertexBuffer->allocate(tri_vert.data() , sizeof( QVector3D ) * tri_vert.size());
+    vertexBuffer->allocate(tri_vert.data() , sizeof( QVector3D ) * (int)tri_vert.size());
 
     if(normalBuffer->isCreated()) normalBuffer->destroy();
     normalBuffer->create();
     normalBuffer->setUsagePattern( QOpenGLBuffer::StaticDraw );
     normalBuffer->bind();
-    normalBuffer->allocate(tri_norm.data() , sizeof( QVector3D ) * tri_norm.size());    
+    normalBuffer->allocate(tri_norm.data() , sizeof( QVector3D ) * (int)tri_norm.size());    
 
     if(texCoordBuffer->isCreated()) texCoordBuffer->destroy();
     texCoordBuffer->create();
     texCoordBuffer->setUsagePattern( QOpenGLBuffer::StaticDraw );
     texCoordBuffer->bind();
-    texCoordBuffer->allocate(tri_tex.data() , sizeof( QVector2D ) * tri_tex.size());    
+    texCoordBuffer->allocate(tri_tex.data() , sizeof( QVector2D ) * (int)tri_tex.size());    
 
     return true;
   }
@@ -68,8 +68,8 @@ struct Mesh_Face {
     mtl_idx = -1; group_idx = -1;
   }
   Mesh_Face(long v0, long v1, long v2,
-	    long t0, long t1, long t2,
-	    long mtl_idx_set, long group_idx_set ) { 
+            long t0, long t1, long t2,
+            long mtl_idx_set, long group_idx_set ) { 
     vert[0] = v0; vert[1] = v1; vert[2] = v2;
     vt[0] = t0; vt[1] = t1; vt[2] = t2;
     mtl_idx = mtl_idx_set;

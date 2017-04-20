@@ -40,8 +40,8 @@ protected:
   QOpenGLShaderProgram shaders;
   QOpenGLVertexArrayObject vao;
   bool prepareShaderProgram(QOpenGLShaderProgram &shader, 
-			    const QString &vertex_file, 
-			    const QString &fragment_file);
+                            const QString &vertex_file, 
+                            const QString &fragment_file);
 
   // Used to track mouse position for keyboard shortcuts.
   bool lastPosFlag = false; // Flag is true if a last position has been captured. Set to false 
@@ -71,7 +71,7 @@ protected:
 
   QElapsedTimer elapsed_time;
   double timeAccumulator = 0, totalTime = 0;
-  void updateGLview(float dt);				   
+  void updateGLview(float dt);
   void timerEvent(QTimerEvent *event);
 
 private:
