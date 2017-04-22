@@ -1,5 +1,5 @@
 TEMPLATE = app
-CONFIG += qt warn_on release embed_manifest_exe c++11
+CONFIG += qt warn_on release embed_manifest_exe c++11 console
 CONFIG -= app_bundle  
 QT += gui opengl xml widgets 
 FORMS += cmsc427.ui 

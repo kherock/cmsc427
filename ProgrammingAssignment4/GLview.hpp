@@ -8,13 +8,28 @@
 
 #include <iostream>
 
+class Animator {
+public:
+  double totalTime = 0;
+  bool isActive = false;
+  float operator()(float dt) {
+    totalTime += dt;
+    return operator()();
+  }
+  virtual float operator()() = 0;
+};
+
 class GLview : public QOpenGLWidget, protected QOpenGLFunctions  {
   Q_OBJECT
 public:
   GLview(QWidget *parent = 0);
   ~GLview() {
     makeCurrent(); // need opengl context to free buffers, otherwise segfault
-    if(mesh != NULL) delete mesh;
+    delete mesh;
+    delete fovAnimator;
+    delete nearAnimator;
+    delete farAnimator;
+    delete mtlAnimator;
     doneCurrent();
   }
   void keyPressGL(QKeyEvent* e);
@@ -49,7 +64,9 @@ protected:
   float lastPosX, lastPosY;   // Mouse state information. 
   bool scaleFlag = false, translateFlag = false, rotateFlag = false;  // Camera movement state information.
 
-  bool lightMotionFlag = false;
+  bool lightMotionFlag = false, cameraMotionFlag = false;
+  Animator *fovAnimator, *nearAnimator, *farAnimator, *mtlAnimator;
+  int visible_mtl_idx = -1;
 
   void mousePressEvent(QMouseEvent *event); 
   void mouseMoveEvent(QMouseEvent *event);

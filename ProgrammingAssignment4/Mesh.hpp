@@ -69,7 +69,7 @@ struct Mesh_Face {
   }
   Mesh_Face(long v0, long v1, long v2,
             long t0, long t1, long t2,
-            long mtl_idx_set, long group_idx_set ) { 
+            long mtl_idx_set, long group_idx_set) { 
     vert[0] = v0; vert[1] = v1; vert[2] = v2;
     vt[0] = t0; vt[1] = t1; vt[2] = t2;
     mtl_idx = mtl_idx_set;

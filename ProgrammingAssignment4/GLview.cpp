@@ -15,8 +15,22 @@ void Matrix2Quaternion(QQuaternion &Q, QMatrix4x4 &M) {
   Q.setZ(sqrt( max( 0.0f, 1 - M(0,0) - M(1,1) + M(2,2) ) ) / 2);
   Q.setX(copysign0( Q.x(), M(2,1) - M(1,2) ));
   Q.setY(copysign0( Q.y(), M(0,2) - M(2,0) ));
-  Q.setZ(copysign0( Q.z(), M(1,0) - M(0,1) )) ;
+  Q.setZ(copysign0( Q.z(), M(1,0) - M(0,1) ));
 }
+
+struct SinAnimator : Animator {
+  float min, max, period, offset;
+  SinAnimator(float min, float max, float period, float initial) : min(min), max(max), period(period) {
+    // Find an initial time offset based on the inital value
+    initial = qMax(initial, min);
+    initial = qMin(initial, max);
+    offset = period * qAsin((2 * initial - max - min) / (max - min)) / (2 * M_PI);
+  };
+
+  float operator()() {
+    return (max - min) / 2 * qSin((totalTime + offset) * 2 * M_PI / period) + max - (max - min) / 2;
+  }
+};
 
 
 // GLView constructor. DO NOT MODIFY.
@@ -68,6 +82,12 @@ void GLview::initializeGL() {
   eye = QVector3D(-3,3,3); lookCenter = QVector3D(0,0,0); lookUp = QVector3D(0,0,1);
   QMatrix4x4 view; view.lookAt(eye, lookCenter, lookUp);
   Matrix2Quaternion(camrot, view);
+
+  // Initialize animators
+  fovAnimator = new SinAnimator(20, 100, 2, yfov);
+  nearAnimator = new SinAnimator(1, 5, 4, neardist);
+  farAnimator = new SinAnimator(5, 50, 4, fardist);
+  mtlAnimator = new SinAnimator(0, 2, 3, 0);
 }
 
 // Set the viewport to window dimensions. DO NOT MODIFY.
@@ -80,14 +100,18 @@ void GLview::paintGL() {
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
   shaders.bind();
-  for(long group_idx = 0; group_idx < (long)mesh->groups.size(); group_idx++) {
+  for (long group_idx = 0; group_idx < (long)mesh->groups.size(); group_idx++) {
     vector<Mesh_Material> &materials = mesh->groups[group_idx].materials;
-    for(long mtl_idx = 0; mtl_idx < (long)materials.size(); mtl_idx++) {
-      if(materials[mtl_idx].n_triangles == 0) continue;
+    for (long mtl_idx = 0; mtl_idx < (long)materials.size(); mtl_idx++) {
+      if (materials[mtl_idx].n_triangles == 0) continue;
+      if (visible_mtl_idx != -1 && visible_mtl_idx != mtl_idx && !mtlAnimator->isActive) continue;
       QMatrix4x4 model;
+      if (mtlAnimator->isActive && visible_mtl_idx == mtl_idx) {
+        model.translate(QVector3D(0, 0, (*mtlAnimator)()));
+      }
       model.translate(mesh->model_translate);
       model.rotate(mesh->model_rotation);
-      model.scale(mesh->model_sx, mesh->model_sy, mesh->model_sz);      
+      model.scale(mesh->model_sx, mesh->model_sy, mesh->model_sz);
       QMatrix4x4 view, projection;
 
       view.rotate(camrot); view.translate(-eye);
@@ -126,7 +150,7 @@ void GLview::paintGL() {
         materials[mtl_idx].map_Kd->bind(0); 
         shaders.setUniformValue("Tex1", (int)0); // Update shader uniform.
       }
-      // Starting at index 0, draw 3 * n_triangle verticies from current geometry buffers.
+      // Starting at index 0, draw 3 * n_triangle vertices from current geometry buffers.
       glDrawArrays( GL_TRIANGLES, 0, 3 * materials[mtl_idx].n_triangles );
 
     }
@@ -283,10 +307,41 @@ void GLview::mouseMoveEvent(QMouseEvent *event) {
 
 
 void GLview::updateGLview(float dt) {
-  if(lightMotionFlag) {
+  if (lightMotionFlag) {
     // Rotate the light direction about the up axis.
     QQuaternion q1 = QQuaternion::fromAxisAndAngle(lookUp, dt * 30);
     LightDirection = q1.rotatedVector(LightDirection);
+  }
+  if (fovAnimator->isActive) {
+    yfov =(*fovAnimator)(dt);
+  }
+  if (nearAnimator->isActive) {
+    neardist = (*nearAnimator)(dt);
+  }
+  if (farAnimator->isActive) {
+    fardist = (*farAnimator)(dt);
+  }
+  if (cameraMotionFlag) {
+    float theta_x = 2.0 * dt / M_PI * 180.0f;
+
+    // Get rotation from -z to camera. Rotate the camera in the world.
+    QQuaternion revQ = camrot.conjugate();
+    QQuaternion newrot = QQuaternion::fromAxisAndAngle(lookUp, theta_x);
+    revQ = newrot * revQ;
+    revQ.normalize();
+
+    // Go back to camera frame.
+    camrot = revQ.conjugate().normalized();
+
+    // Update camera position.
+    eye = newrot.rotatedVector(eye - lookCenter) + lookCenter;
+  }
+  if (mtlAnimator->isActive) {
+    (*mtlAnimator)(dt);    
+    // animator should reset after a period
+    if (mtlAnimator->totalTime >= ((SinAnimator *)mtlAnimator)->period) {
+      mtlAnimator->isActive = false;
+    }
   }
 }
 
@@ -311,35 +366,47 @@ void GLview::timerEvent(QTimerEvent *) {
 }
 
 void GLview::light_motion() {
-  if(mesh == NULL) return;  lightMotionFlag = !lightMotionFlag; 
+  if (mesh == NULL) return;
+  lightMotionFlag = !lightMotionFlag;
 }
 
 
 void GLview::animate_fov() {
-  cout << "implement animate_fov()" << endl;
+  if (mesh == NULL) return;
+  fovAnimator->isActive = !fovAnimator->isActive;
 }
 
 void GLview::animate_near() {
-  cout << "implement animate_near()" << endl;
+  if (mesh == NULL) return;
+  nearAnimator->isActive = !nearAnimator->isActive;
 }
 
 void GLview::animate_far() {
-  cout << "implement animate_far()" << endl;
+  if (mesh == NULL) return;
+  nearAnimator->isActive = !nearAnimator->isActive;
 }
 
 void GLview::animate_camera() {
-  cout << "implement animate_camera()" << endl;
+  if (mesh == NULL) return;
+  cameraMotionFlag = !cameraMotionFlag;
 }
 
 void GLview::cycle_material() {
-  cout << "implement cycle_material()" << endl;
-
-  QString material_name_text = "Material name is here.";
+  if (mesh == NULL) return;
+  vector<Mesh_Material> &materials = mesh->groups[0].materials;
+  visible_mtl_idx++;
+  if (visible_mtl_idx == materials.size()) {
+    visible_mtl_idx = -1;
+    return;
+  }
+  QString material_name_text = visible_mtl_idx ? materials[visible_mtl_idx].name : "(default)";
   QMessageBox::information(this, "Material Name", material_name_text);
 }
 
 void GLview::animate_material() {
-  cout << "implement animate_material()" << endl;
+  if (mesh == NULL || visible_mtl_idx == -1) return;
+  mtlAnimator->totalTime = 0;
+  mtlAnimator->isActive = true;
 }
 
 void GLview::cycle_group() {
