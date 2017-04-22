@@ -1,0 +1,220 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{E3960580-F7C5-33F9-A23F-5FD00A5F5AB4}</ProjectGuid>
+    <RootNamespace>cmsc427</RootNamespace>
+    <Keyword>Qt4VSv1.0</Keyword>
+    <ProjectName>ProgrammingAssignment4</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <PlatformToolSet>v140</PlatformToolSet>
+    <OutputDirectory>release\</OutputDirectory>
+    <ATLMinimizesCRunTimeLibraryUsage>false</ATLMinimizesCRunTimeLibraryUsage>
+    <CharacterSet>NotSet</CharacterSet>
+    <ConfigurationType>Application</ConfigurationType>
+    <IntermediateDirectory>release\</IntermediateDirectory>
+    <PrimaryOutput>cmsc427</PrimaryOutput>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <PlatformToolSet>v140</PlatformToolSet>
+    <OutputDirectory>debug\</OutputDirectory>
+    <ATLMinimizesCRunTimeLibraryUsage>false</ATLMinimizesCRunTimeLibraryUsage>
+    <CharacterSet>NotSet</CharacterSet>
+    <ConfigurationType>Application</ConfigurationType>
+    <IntermediateDirectory>debug\</IntermediateDirectory>
+    <PrimaryOutput>cmsc427</PrimaryOutput>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cmsc427</TargetName>
+    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</IgnoreImportLibrary>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cmsc427</TargetName>
+    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</IgnoreImportLibrary>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>/usr/local/include;.;C:\ProgramData\Qt\5.7\msvc2015_64\include;C:\ProgramData\Qt\5.7\msvc2015_64\include\QtOpenGL;C:\ProgramData\Qt\5.7\msvc2015_64\include\QtWidgets;C:\ProgramData\Qt\5.7\msvc2015_64\include\QtGui;C:\ProgramData\Qt\5.7\msvc2015_64\include\QtANGLE;C:\ProgramData\Qt\5.7\msvc2015_64\include\QtXml;C:\ProgramData\Qt\5.7\msvc2015_64\include\QtCore;release;.;C:\ProgramData\Qt\5.7\msvc2015_64\mkspecs\win32-msvc2015;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
+      <AssemblerListingLocation>release\</AssemblerListingLocation>
+      <BrowseInformation>false</BrowseInformation>
+      <DebugInformationFormat>None</DebugInformationFormat>
+      <DisableSpecificWarnings>4577;4467;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ObjectFileName>release\</ObjectFileName>
+      <Optimization>MaxSpeed</Optimization>
+      <PreprocessorDefinitions>_CONSOLE;UNICODE;WIN32;WIN64;QT_NO_DEBUG;QT_OPENGL_LIB;QT_WIDGETS_LIB;QT_GUI_LIB;QT_XML_LIB;QT_CORE_LIB;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessToFile>false</PreprocessToFile>
+      <ProgramDataBaseFileName>
+      </ProgramDataBaseFileName>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>C:\ProgramData\Qt\5.7\msvc2015_64\lib\Qt5OpenGL.lib;C:\ProgramData\Qt\5.7\msvc2015_64\lib\Qt5Widgets.lib;C:\ProgramData\Qt\5.7\msvc2015_64\lib\Qt5Gui.lib;C:\ProgramData\Qt\5.7\msvc2015_64\lib\Qt5Xml.lib;C:\ProgramData\Qt\5.7\msvc2015_64\lib\Qt5Core.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\ProgramData\Qt\5.7\msvc2015_64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>"/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" %(AdditionalOptions)</AdditionalOptions>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreImportLibrary>true</IgnoreImportLibrary>
+      <LinkIncremental>false</LinkIncremental>
+      <OutputFile>$(OutDir)\cmsc427.exe</OutputFile>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
+      <SubSystem>Console</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Link>
+    <Midl>
+      <DefaultCharType>Unsigned</DefaultCharType>
+      <EnableErrorChecks>None</EnableErrorChecks>
+      <WarningLevel>0</WarningLevel>
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_CONSOLE;UNICODE;WIN32;WIN64;QT_NO_DEBUG;QT_OPENGL_LIB;QT_WIDGETS_LIB;QT_GUI_LIB;QT_XML_LIB;QT_CORE_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>/usr/local/include;.;C:\ProgramData\Qt\5.7\msvc2015_64\include;C:\ProgramData\Qt\5.7\msvc2015_64\include\QtOpenGL;C:\ProgramData\Qt\5.7\msvc2015_64\include\QtWidgets;C:\ProgramData\Qt\5.7\msvc2015_64\include\QtGui;C:\ProgramData\Qt\5.7\msvc2015_64\include\QtANGLE;C:\ProgramData\Qt\5.7\msvc2015_64\include\QtXml;C:\ProgramData\Qt\5.7\msvc2015_64\include\QtCore;debug;.;C:\ProgramData\Qt\5.7\msvc2015_64\mkspecs\win32-msvc2015;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
+      <AssemblerListingLocation>debug\</AssemblerListingLocation>
+      <BrowseInformation>false</BrowseInformation>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4577;4467;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ObjectFileName>debug\</ObjectFileName>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_CONSOLE;UNICODE;WIN32;WIN64;QT_OPENGL_LIB;QT_WIDGETS_LIB;QT_GUI_LIB;QT_XML_LIB;QT_CORE_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessToFile>false</PreprocessToFile>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>C:\ProgramData\Qt\5.7\msvc2015_64\lib\Qt5OpenGLd.lib;C:\ProgramData\Qt\5.7\msvc2015_64\lib\Qt5Widgetsd.lib;C:\ProgramData\Qt\5.7\msvc2015_64\lib\Qt5Guid.lib;C:\ProgramData\Qt\5.7\msvc2015_64\lib\Qt5Xmld.lib;C:\ProgramData\Qt\5.7\msvc2015_64\lib\Qt5Cored.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\ProgramData\Qt\5.7\msvc2015_64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>"/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" %(AdditionalOptions)</AdditionalOptions>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreImportLibrary>true</IgnoreImportLibrary>
+      <OutputFile>$(OutDir)\cmsc427.exe</OutputFile>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
+      <SubSystem>Console</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Link>
+    <Midl>
+      <DefaultCharType>Unsigned</DefaultCharType>
+      <EnableErrorChecks>None</EnableErrorChecks>
+      <WarningLevel>0</WarningLevel>
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_CONSOLE;UNICODE;WIN32;WIN64;QT_OPENGL_LIB;QT_WIDGETS_LIB;QT_GUI_LIB;QT_XML_LIB;QT_CORE_LIB;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="GLview.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="cmsc427.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="GLview.hpp">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">GLview.hpp;C:\ProgramData\Qt\5.7\msvc2015_64\bin\moc.exe;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\ProgramData\Qt\5.7\msvc2015_64\bin\moc.exe  -DUNICODE -DWIN32 -DWIN64 -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_XML_LIB -DQT_CORE_LIB -D_MSC_VER=1900 -D_WIN32 -D_WIN64 -IC:/ProgramData/Qt/5.7/msvc2015_64/mkspecs/win32-msvc2015 -ID:/Workspace/cmsc427/ProgrammingAssignment4 -IC:/ProgramData/Qt/5.7/msvc2015_64/include -IC:/ProgramData/Qt/5.7/msvc2015_64/include/QtOpenGL -IC:/ProgramData/Qt/5.7/msvc2015_64/include/QtWidgets -IC:/ProgramData/Qt/5.7/msvc2015_64/include/QtGui -IC:/ProgramData/Qt/5.7/msvc2015_64/include/QtANGLE -IC:/ProgramData/Qt/5.7/msvc2015_64/include/QtXml -IC:/ProgramData/Qt/5.7/msvc2015_64/include/QtCore GLview.hpp -o release\moc_GLview.cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MOC GLview.hpp</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">release\moc_GLview.cpp;%(Outputs)</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">GLview.hpp;C:\ProgramData\Qt\5.7\msvc2015_64\bin\moc.exe;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\ProgramData\Qt\5.7\msvc2015_64\bin\moc.exe  -DUNICODE -DWIN32 -DWIN64 -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_XML_LIB -DQT_CORE_LIB -D_MSC_VER=1900 -D_WIN32 -D_WIN64 -IC:/ProgramData/Qt/5.7/msvc2015_64/mkspecs/win32-msvc2015 -ID:/Workspace/cmsc427/ProgrammingAssignment4 -IC:/ProgramData/Qt/5.7/msvc2015_64/include -IC:/ProgramData/Qt/5.7/msvc2015_64/include/QtOpenGL -IC:/ProgramData/Qt/5.7/msvc2015_64/include/QtWidgets -IC:/ProgramData/Qt/5.7/msvc2015_64/include/QtGui -IC:/ProgramData/Qt/5.7/msvc2015_64/include/QtANGLE -IC:/ProgramData/Qt/5.7/msvc2015_64/include/QtXml -IC:/ProgramData/Qt/5.7/msvc2015_64/include/QtCore GLview.hpp -o debug\moc_GLview.cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MOC GLview.hpp</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">debug\moc_GLview.cpp;%(Outputs)</Outputs>
+    </CustomBuild>
+    <ClInclude Include="Mesh.hpp" />
+    <CustomBuild Include="cmsc427.hpp">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cmsc427.hpp;C:\ProgramData\Qt\5.7\msvc2015_64\bin\moc.exe;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\ProgramData\Qt\5.7\msvc2015_64\bin\moc.exe  -DUNICODE -DWIN32 -DWIN64 -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_XML_LIB -DQT_CORE_LIB -D_MSC_VER=1900 -D_WIN32 -D_WIN64 -IC:/ProgramData/Qt/5.7/msvc2015_64/mkspecs/win32-msvc2015 -ID:/Workspace/cmsc427/ProgrammingAssignment4 -IC:/ProgramData/Qt/5.7/msvc2015_64/include -IC:/ProgramData/Qt/5.7/msvc2015_64/include/QtOpenGL -IC:/ProgramData/Qt/5.7/msvc2015_64/include/QtWidgets -IC:/ProgramData/Qt/5.7/msvc2015_64/include/QtGui -IC:/ProgramData/Qt/5.7/msvc2015_64/include/QtANGLE -IC:/ProgramData/Qt/5.7/msvc2015_64/include/QtXml -IC:/ProgramData/Qt/5.7/msvc2015_64/include/QtCore cmsc427.hpp -o release\moc_cmsc427.cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MOC cmsc427.hpp</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">release\moc_cmsc427.cpp;%(Outputs)</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cmsc427.hpp;C:\ProgramData\Qt\5.7\msvc2015_64\bin\moc.exe;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\ProgramData\Qt\5.7\msvc2015_64\bin\moc.exe  -DUNICODE -DWIN32 -DWIN64 -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_XML_LIB -DQT_CORE_LIB -D_MSC_VER=1900 -D_WIN32 -D_WIN64 -IC:/ProgramData/Qt/5.7/msvc2015_64/mkspecs/win32-msvc2015 -ID:/Workspace/cmsc427/ProgrammingAssignment4 -IC:/ProgramData/Qt/5.7/msvc2015_64/include -IC:/ProgramData/Qt/5.7/msvc2015_64/include/QtOpenGL -IC:/ProgramData/Qt/5.7/msvc2015_64/include/QtWidgets -IC:/ProgramData/Qt/5.7/msvc2015_64/include/QtGui -IC:/ProgramData/Qt/5.7/msvc2015_64/include/QtANGLE -IC:/ProgramData/Qt/5.7/msvc2015_64/include/QtXml -IC:/ProgramData/Qt/5.7/msvc2015_64/include/QtCore cmsc427.hpp -o debug\moc_cmsc427.cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MOC cmsc427.hpp</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">debug\moc_cmsc427.cpp;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="debug\moc_GLview.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="release\moc_GLview.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="debug\moc_cmsc427.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="release\moc_cmsc427.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="debug\qrc_resources.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="release\qrc_resources.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClInclude Include="ui_cmsc427.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="cmsc427.ui">
+      <FileType>Document</FileType>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cmsc427.ui;C:\ProgramData\Qt\5.7\msvc2015_64\bin\uic.exe;GLview.hpp;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\ProgramData\Qt\5.7\msvc2015_64\bin\uic.exe cmsc427.ui -o ui_cmsc427.h</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">UIC cmsc427.ui</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ui_cmsc427.h;%(Outputs)</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cmsc427.ui;C:\ProgramData\Qt\5.7\msvc2015_64\bin\uic.exe;GLview.hpp;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\ProgramData\Qt\5.7\msvc2015_64\bin\uic.exe cmsc427.ui -o ui_cmsc427.h</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">UIC cmsc427.ui</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ui_cmsc427.h;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="resources.qrc">
+      <FileType>Document</FileType>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">resources.qrc;C:\ProgramData\Qt\5.7\msvc2015_64\bin\rcc.exe;texture.fsh;texture.vsh;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\ProgramData\Qt\5.7\msvc2015_64\bin\rcc.exe -name resources resources.qrc -o release\qrc_resources.cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">RCC resources.qrc</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">release\qrc_resources.cpp;%(Outputs)</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">resources.qrc;C:\ProgramData\Qt\5.7\msvc2015_64\bin\rcc.exe;texture.fsh;texture.vsh;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\ProgramData\Qt\5.7\msvc2015_64\bin\rcc.exe -name resources resources.qrc -o debug\qrc_resources.cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">RCC resources.qrc</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">debug\qrc_resources.cpp;%(Outputs)</Outputs>
+    </CustomBuild>
+    <None Include="texture.fsh" />
+    <None Include="texture.vsh" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>
