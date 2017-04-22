@@ -88,6 +88,12 @@ void GLview::initializeGL() {
   nearAnimator = new SinAnimator(1, 5, 4, neardist);
   farAnimator = new SinAnimator(5, 50, 4, fardist);
   mtlAnimator = new SinAnimator(0, 2, 3, 0);
+
+  // Wheel centers
+  wheelCenters.push_back(QVector3D(-0.759704f, -1.37883f, 0.326519f));
+  wheelCenters.push_back(QVector3D(0.759704f, -1.3787f, 0.326519f));
+  wheelCenters.push_back(QVector3D(-0.753861f, 1.83104f, 0.32648f));
+  wheelCenters.push_back(QVector3D(0.753861f, 1.83101f, 0.32648f));
 }
 
 // Set the viewport to window dimensions. DO NOT MODIFY.
@@ -101,6 +107,7 @@ void GLview::paintGL() {
 
   shaders.bind();
   for (long group_idx = 0; group_idx < (long)mesh->groups.size(); group_idx++) {
+    if (visible_group_idx != -1 && visible_group_idx != group_idx) continue;
     vector<Mesh_Material> &materials = mesh->groups[group_idx].materials;
     for (long mtl_idx = 0; mtl_idx < (long)materials.size(); mtl_idx++) {
       if (materials[mtl_idx].n_triangles == 0) continue;
@@ -108,6 +115,15 @@ void GLview::paintGL() {
       QMatrix4x4 model;
       if (mtlAnimator->isActive && visible_mtl_idx == mtl_idx) {
         model.translate(QVector3D(0, 0, (*mtlAnimator)()));
+      }
+      // wheel groups are object__16-19
+      if (16 < group_idx && group_idx <= 20) {
+        model.translate(wheelCenters[group_idx - 17]);
+        if (wheelMotionFlag) {
+          QQuaternion q1 = QQuaternion::fromAxisAndAngle(QVector3D(1, 0, 0), wheelrot);
+          model.rotate(q1);
+        }
+        model.translate(-wheelCenters[group_idx - 17]);
       }
       model.translate(mesh->model_translate);
       model.rotate(mesh->model_rotation);
@@ -313,7 +329,7 @@ void GLview::updateGLview(float dt) {
     LightDirection = q1.rotatedVector(LightDirection);
   }
   if (fovAnimator->isActive) {
-    yfov =(*fovAnimator)(dt);
+    yfov = (*fovAnimator)(dt);
   }
   if (nearAnimator->isActive) {
     neardist = (*nearAnimator)(dt);
@@ -342,6 +358,9 @@ void GLview::updateGLview(float dt) {
     if (mtlAnimator->totalTime >= ((SinAnimator *)mtlAnimator)->period) {
       mtlAnimator->isActive = false;
     }
+  }
+  if (wheelMotionFlag) {
+    wheelrot += dt * 300;
   }
 }
 
@@ -410,15 +429,20 @@ void GLview::animate_material() {
 }
 
 void GLview::cycle_group() {
-  cout << "implement cycle_group()" << endl;
-  QString group_name_text = "Cycle group name here.";
+  if (mesh == NULL) return;
+  visible_group_idx++;
+  if (visible_group_idx == mesh->groups.size()) {
+    visible_group_idx = -1;
+    return;
+  }
+  QString group_name_text = mesh->groups[visible_group_idx].name.data();
   QMessageBox::information(this, "Group Name", group_name_text);
-  
+ 
 }
 
 void GLview::animate_rotate_wheels() {
-  cout << "implement animate_rotate_wheels()" << endl;
-  
+  if (mesh == NULL) return;
+  wheelMotionFlag = !wheelMotionFlag;
 }
 
 void GLview::animate_swerve_wheels() {

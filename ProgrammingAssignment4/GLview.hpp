@@ -64,9 +64,11 @@ protected:
   float lastPosX, lastPosY;   // Mouse state information. 
   bool scaleFlag = false, translateFlag = false, rotateFlag = false;  // Camera movement state information.
 
-  bool lightMotionFlag = false, cameraMotionFlag = false;
+  bool lightMotionFlag = false, cameraMotionFlag = false, wheelMotionFlag = false;
   Animator *fovAnimator, *nearAnimator, *farAnimator, *mtlAnimator;
-  int visible_mtl_idx = -1;
+  int visible_mtl_idx = -1, visible_group_idx = -1;
+  vector<QVector3D> wheelCenters;
+  float wheelrot = 0;
 
   void mousePressEvent(QMouseEvent *event); 
   void mouseMoveEvent(QMouseEvent *event);
