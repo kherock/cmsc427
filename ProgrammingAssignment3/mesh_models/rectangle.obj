@@ -1,0 +1,10 @@
+# This cube has a different material
+# applied to each of its faces.
+    mtllib cube.mtl
+    v    0.000000    0.000000    0.000000
+    v    1.000000    0.000000    0.000000
+    v    0.000000    4.000000    0.000000
+    # 8 vertices
+    g front
+    usemtl red
+    f 1 2 3
