@@ -1,6 +1,7 @@
 #include "GLview.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <iostream>
 
@@ -255,6 +256,8 @@ void GLview::timerEvent(QTimerEvent *){
 bool GLview::Render(QString pngFile, bool useBVH, bool useSAH) {
   if(mesh == NULL) return true;
 
+  auto t0 = chrono::high_resolution_clock::now();
+
   mesh->storeTri();
   if (useBVH) mesh->storeBVH(useSAH);
 
@@ -330,6 +333,8 @@ bool GLview::Render(QString pngFile, bool useBVH, bool useSAH) {
     }
   }
   output.save(pngFile);
+  auto t1 = chrono::high_resolution_clock::now();
+  cout << "Rendering took " << chrono::duration_cast<chrono::milliseconds>(t1 - t0).count() / 1000. << " seconds." << endl;;
 
   QString message = QString::number(aabb_cnt) + " ray-AABB intersections and "  + QString::number(tri_cnt)  + " ray-triangle intersections";
   QMessageBox::information(window(), "Intersect counts", message);

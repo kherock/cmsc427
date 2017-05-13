@@ -124,6 +124,13 @@ struct Triangle {
     box.pMin = QVector3D(mind(0), mind(1), mind(2));    
     return box;
   }
+
+  bool operator < (const Triangle &b) const { return bbox().Centroid().length() < b.bbox().Centroid().length(); }
+  static function<const bool(const Triangle &a, const Triangle &b)> axisComp(int axis) {
+    return [axis](const Triangle &a, const Triangle &b) {
+      return a.bbox().Centroid()[axis] < b.bbox().Centroid()[axis];
+    };
+  }
 };
 
 

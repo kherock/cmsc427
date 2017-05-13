@@ -14,11 +14,39 @@ struct centroid_idx {
 };
 
 bvhnode *build_bvh(bool use_SAH, vector<Triangle> &tri, long start, long end) {
-  // TODO: Your code for building a BVH here.
   // [start, end) interval triangle array the current node is operating on.
   // tri = triangle array, this can be updated at each recursion
-  // use_SAH is a flag tha tis set to true if SAH is being used in the GUI.
-  return NULL;
+  // use_SAH is a flag that is set to true if SAH is being used in the GUI.
+  bvhnode *tree = new bvhnode();
+  tree->box = tri[start].bbox();
+  for (long i = start + 1; i < end; i++) {
+    AABB box = tri[i].bbox();
+    tree->box.pMin = QVector3D(
+      min(tree->box.pMin[0], box.pMin[0]),
+      min(tree->box.pMin[1], box.pMin[1]),
+      min(tree->box.pMin[2], box.pMin[2])
+    );
+    tree->box.pMax = QVector3D(
+      max(tree->box.pMax[0], box.pMax[0]),
+      max(tree->box.pMax[1], box.pMax[1]),
+      max(tree->box.pMax[2], box.pMax[2])
+    );
+  }
+  if (end - start <= tri.size() / qLn(tri.size())) {
+    tree->type = bvhnode::LEAF;
+    tree->data.ival[0] = start;
+    tree->data.ival[1] = end;
+  } else {
+    // split on the longest dimension of the AABB
+    QVector3D dims = tree->box.pMax - tree->box.pMin;
+    int axis;
+    axis = dims[0] > dims[1] ? 0 : 1;
+    axis = dims[axis] > dims[2] ? axis : 2;
+    sort(tri.begin() + start, tri.begin() + end, Triangle::axisComp(axis));
+    tree->data.children[0] = build_bvh(use_SAH, tri, start, (start + end) / 2);
+    tree->data.children[1] = build_bvh(use_SAH, tri, (start + end) / 2, end);
+  }
+  return tree;
 }
 
 // Delete tree in post-order traversal.
@@ -38,9 +66,12 @@ void bvh_intersect(long &aabb_cnt, long &tri_cnt, bool &found_isect,
        IsectTri &best_isect, 
        bvhnode *node, vector<Triangle> &tri, Ray &ray) {
 
-  // HINT: Example of what to do at a leaf node. 
-  if (node->type == bvhnode::LEAF) {
-    long start = node->data.ival[0], end = node->data.ival[1];
+  // HINT: Example of what to do at a leaf node.
+  long start, end;
+  switch (node->type) {
+  case bvhnode::LEAF:
+    start = node->data.ival[0];
+    end = node->data.ival[1];
     for (long idx = start; idx < end; idx++) {
       IsectTri isect;
       isect.tri_idx = idx;
@@ -54,9 +85,25 @@ void bvh_intersect(long &aabb_cnt, long &tri_cnt, bool &found_isect,
         }
       }
     }
-  } else {
-    // TODO: Your code here. You want to intersect closer sub nodes
-    // first.
+    break;
+  case bvhnode::SPLIT:
+    bool found_isect0 = false, found_isect1 = false;
+    IsectTri best_isect0, best_isect1;
+    IsectAABB isect;
+    aabb_cnt += 2;
+    if (node->data.children[0]->box.intersect(isect, ray)) {
+      bvh_intersect(aabb_cnt, tri_cnt, found_isect0, best_isect0, node->data.children[0], tri, ray);
+    }
+    if (node->data.children[1]->box.intersect(isect, ray)) {
+      bvh_intersect(aabb_cnt, tri_cnt, found_isect1, best_isect1, node->data.children[1], tri, ray);
+    }
+    found_isect = found_isect0 || found_isect1;
+    if (found_isect0 && found_isect1) {
+      best_isect = best_isect0.t < best_isect1.t ? best_isect0 : best_isect1;
+    } else {
+      best_isect = found_isect0 ? best_isect0 : best_isect1;
+    }
+    break;
   }
 }
 
@@ -474,8 +521,8 @@ bool Mesh::check_intersect(bool useBVH, long &aabb_cnt, long &tri_cnt, int &mtl_
   best.tri_idx = -1;
   if (bvhroot == NULL || useBVH == false) {
     // Scans all triangles. Returns best intersection.
-    for (size_t t = 0; t < triangles.size(); t++) {
-      IsectTri isect; isect.tri_idx = (long)t;
+    for (long t = 0; t < triangles.size(); t++) {
+      IsectTri isect; isect.tri_idx = t;
       tri_cnt++;
       if (triangles[t].intersect(isect, ray)) {
         if (found_isect) {
