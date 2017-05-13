@@ -8,15 +8,16 @@
 
 #include <iostream>
 
+template<typename T>
 class Animator {
 public:
   double totalTime = 0;
   bool isActive = false;
-  float operator()(float dt) {
+  T operator()(float dt) {
     totalTime += dt;
     return operator()();
   }
-  virtual float operator()() = 0;
+  virtual T operator()() = 0;
 };
 
 class GLview : public QOpenGLWidget, protected QOpenGLFunctions  {
@@ -30,6 +31,8 @@ public:
     delete nearAnimator;
     delete farAnimator;
     delete mtlAnimator;
+    delete wheelSwerveAnimator;
+    delete swerveAnimator;
     doneCurrent();
   }
   void keyPressGL(QKeyEvent* e);
@@ -65,7 +68,8 @@ protected:
   bool scaleFlag = false, translateFlag = false, rotateFlag = false;  // Camera movement state information.
 
   bool lightMotionFlag = false, cameraMotionFlag = false, wheelMotionFlag = false;
-  Animator *fovAnimator, *nearAnimator, *farAnimator, *mtlAnimator;
+  Animator<float> *fovAnimator, *nearAnimator, *farAnimator, *mtlAnimator, *wheelSwerveAnimator;
+  Animator<QVector2D> *swerveAnimator;
   int visible_mtl_idx = -1, visible_group_idx = -1;
   vector<QVector3D> wheelCenters;
   float wheelrot = 0;

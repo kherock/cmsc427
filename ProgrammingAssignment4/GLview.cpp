@@ -18,19 +18,41 @@ void Matrix2Quaternion(QQuaternion &Q, QMatrix4x4 &M) {
   Q.setZ(copysign0( Q.z(), M(1,0) - M(0,1) ));
 }
 
-struct SinAnimator : Animator {
+struct SinAnimator : Animator<float> {
   float min, max, period, offset;
   SinAnimator(float min, float max, float period, float initial) : min(min), max(max), period(period) {
     // Find an initial time offset based on the inital value
     initial = qMax(initial, min);
     initial = qMin(initial, max);
     offset = period * qAsin((2 * initial - max - min) / (max - min)) / (2 * M_PI);
-  };
+  }
 
   float operator()() {
     return (max - min) / 2 * qSin((totalTime + offset) * 2 * M_PI / period) + max - (max - min) / 2;
   }
 };
+
+struct LemniscateAnimator : Animator<QVector2D> {
+  float width;
+  LemniscateAnimator(float width) : width(width) {}
+
+  QVector2D operator()() {
+    return QVector2D(
+      width * qCos(totalTime) / (1 + qPow(qSin(totalTime), 2)),
+      width * qSin(totalTime) * qCos(totalTime) / (1 + qPow(qSin(totalTime), 2))
+    );
+  }
+};
+
+int getWheelIdx(int group_idx) {
+  // object__16 - object__19 (wheels)
+  if (16 < group_idx && group_idx <= 20) return group_idx - 17;
+  // object__34 - object__36 (inner wheel)
+  if (34 < group_idx && group_idx <= 37) return group_idx - 35;
+  // object__43 - object__50 (tyre and tread are in pairs)
+  if (43 < group_idx && group_idx <= 51) return (group_idx / 2) - 22;
+  return -1;
+}
 
 
 // GLView constructor. DO NOT MODIFY.
@@ -88,6 +110,8 @@ void GLview::initializeGL() {
   nearAnimator = new SinAnimator(1, 5, 4, neardist);
   farAnimator = new SinAnimator(5, 50, 4, fardist);
   mtlAnimator = new SinAnimator(0, 2, 3, 0);
+  wheelSwerveAnimator = new SinAnimator(-30, 30, 2 * M_PI, -30);
+  swerveAnimator = new LemniscateAnimator(10);
 
   // Wheel centers
   wheelCenters.push_back(QVector3D(-0.759704f, -1.37883f, 0.326519f));
@@ -113,21 +137,27 @@ void GLview::paintGL() {
       if (materials[mtl_idx].n_triangles == 0) continue;
       if (visible_mtl_idx != -1 && visible_mtl_idx != mtl_idx && !mtlAnimator->isActive) continue;
       QMatrix4x4 model;
+      model.rotate(mesh->model_rotation);
+      model.translate(mesh->model_translate);
+      model.scale(mesh->model_sx, mesh->model_sy, mesh->model_sz);
       if (mtlAnimator->isActive && visible_mtl_idx == mtl_idx) {
         model.translate(QVector3D(0, 0, (*mtlAnimator)()));
       }
-      // wheel groups are object__16-19
-      if (16 < group_idx && group_idx <= 20) {
-        model.translate(wheelCenters[group_idx - 17]);
+      int wheelIdx = getWheelIdx(group_idx);
+      if (wheelIdx >= 0) {
+        QVector3D axis;
+        float angle;
+        mesh->model_rotation.getAxisAndAngle(&axis, &angle);
+        QQuaternion q = QQuaternion::fromAxisAndAngle(axis, -angle);
+        model.translate(q.rotatedVector(mesh->model_translate + wheelCenters[wheelIdx]));
         if (wheelMotionFlag) {
-          QQuaternion q1 = QQuaternion::fromAxisAndAngle(QVector3D(1, 0, 0), wheelrot);
-          model.rotate(q1);
+          model.rotate(wheelrot, QVector3D(1, 0, 0));
         }
-        model.translate(-wheelCenters[group_idx - 17]);
+        if (wheelSwerveAnimator->isActive && wheelIdx < 2) {
+          //model.rotate((*wheelSwerveAnimator)(), QVector3D(0, 0, 1));
+        }
+        model.translate(q.rotatedVector(-mesh->model_translate - wheelCenters[wheelIdx]));
       }
-      model.translate(mesh->model_translate);
-      model.rotate(mesh->model_rotation);
-      model.scale(mesh->model_sx, mesh->model_sy, mesh->model_sz);
       QMatrix4x4 view, projection;
 
       view.rotate(camrot); view.translate(-eye);
@@ -362,6 +392,14 @@ void GLview::updateGLview(float dt) {
   if (wheelMotionFlag) {
     wheelrot += dt * 300;
   }
+  if (wheelSwerveAnimator->isActive) {
+    (*wheelSwerveAnimator)(dt);
+  }
+  if (swerveAnimator->isActive) {
+    QVector2D translate = (*swerveAnimator)(dt);
+    mesh->model_rotation = QQuaternion::fromAxisAndAngle(QVector3D(0, 0, 1), -3 * qAtan(qSin(swerveAnimator->totalTime)) * 180 / M_PI);
+    mesh->model_translate = QVector3D(translate[0], translate[1], 0);
+  }
 }
 
 
@@ -402,7 +440,7 @@ void GLview::animate_near() {
 
 void GLview::animate_far() {
   if (mesh == NULL) return;
-  nearAnimator->isActive = !nearAnimator->isActive;
+  farAnimator->isActive = !farAnimator->isActive;
 }
 
 void GLview::animate_camera() {
@@ -446,5 +484,7 @@ void GLview::animate_rotate_wheels() {
 }
 
 void GLview::animate_swerve_wheels() {
-  cout << "implement animate_swerve_wheels()" << endl;
+  if (mesh == NULL) return;
+  swerveAnimator->isActive = !swerveAnimator->isActive;
+  wheelSwerveAnimator->isActive = !wheelSwerveAnimator->isActive;
 }
