@@ -218,7 +218,7 @@ struct Mesh {
   void add_face(int v0, int v1, int v2, int v3, int mtl_idx = 0);
   void add_face(const vector<long> &cur_vert, const vector<long> &cur_vt, const vector<long> &cur_vn, int mtl_idx);
 
-  bool check_intersect(bool useBVH, long &aabb_cnt, long &tri_cnt, int &mtl_idx, QVector3D &pos, QVector3D &norm, Ray &ray);
+  bool check_intersect(bool useBVH, long &aabb_cnt, long &tri_cnt, int &mtl_idx, QVector3D &pos, QVector3D &norm, QVector2D &interpolated_uv, Ray &ray);
 };
 
 

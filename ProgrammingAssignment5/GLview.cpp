@@ -296,8 +296,9 @@ bool GLview::Render(QString pngFile, bool useBVH, bool useSAH) {
 
       // Check ray for intersection and get normal and position of intersection point.
       QVector3D Position, Normal;
+      QVector2D UV;
       int mtl_idx = -1;
-      if (mesh->check_intersect(useBVH, aabb_cnt, tri_cnt, mtl_idx, Position, Normal, ray)) {
+      if (mesh->check_intersect(useBVH, aabb_cnt, tri_cnt, mtl_idx, Position, Normal, UV, ray)) {
         // Phong shading.
         Material &m = mesh->materials[mtl_idx];
 
@@ -312,14 +313,20 @@ bool GLview::Render(QString pngFile, bool useBVH, bool useSAH) {
 
         QVector3D r = -s + 2 * QVector3D::dotProduct(s, n) * n;
 
+        QVector3D Kd = m.Kd;
+        if (m.is_texture) {
+          QColor color(m.map_Kd_img.pixel(UV[0] * m.map_Kd_img.width(), UV[1] * m.map_Kd_img.height()));
+          Kd = QVector3D(color.red(), color.green(), color.blue()) / 255;
+        }
+
         QVector3D L(0,0,0);
         if (m.Ns > 0) {
-          L = Li * (m.Ka +                                                // ambient
-            m.Kd * max(0.0f, QVector3D::dotProduct(n, s)) +               // diffuse
-            m.Ks * powf(max(0.0f, QVector3D::dotProduct(r, v)), m.Ns));   // specular
+          L = Li * (m.Ka +                                                  // ambient
+              Kd * max(0.0f, QVector3D::dotProduct(n, s)) +                 // diffuse
+              m.Ks * powf(max(0.0f, QVector3D::dotProduct(r, v)), m.Ns));   // specular
         } else {
-          L = Li * ( m.Ka +                                        // ambient
-               m.Kd * max(0.0f, QVector3D::dotProduct(n, s))  );   // specular      
+          L = Li * ( m.Ka +                                         // ambient
+                Kd * max(0.0f, QVector3D::dotProduct(n, s)) );      // specular      
         }
         red = L[0]; green = L[1]; blue = L[2]; // Phong Shading color
       } else {

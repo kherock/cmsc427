@@ -18,19 +18,50 @@ bvhnode *build_bvh(bool use_SAH, vector<Triangle> &tri, long start, long end) {
   // tri = triangle array, this can be updated at each recursion
   // use_SAH is a flag that is set to true if SAH is being used in the GUI.
   bvhnode *tree = new bvhnode();
-  tree->box = tri[start].bbox();
-  for (long i = start + 1; i < end; i++) {
-    AABB box = tri[i].bbox();
-    tree->box.pMin = QVector3D(
-      min(tree->box.pMin[0], box.pMin[0]),
-      min(tree->box.pMin[1], box.pMin[1]),
-      min(tree->box.pMin[2], box.pMin[2])
+  vector<AABB> leftBbs(end - start), rightBbs(end - start);
+  leftBbs[0] = tri[start].bbox();
+  for (long i = 1; i < end - start; i++) {
+    AABB box = tri[start + i].bbox();
+    leftBbs[i].pMin = QVector3D(
+      min(leftBbs[i - 1].pMin[0], box.pMin[0]),
+      min(leftBbs[i - 1].pMin[1], box.pMin[1]),
+      min(leftBbs[i - 1].pMin[2], box.pMin[2])
     );
-    tree->box.pMax = QVector3D(
-      max(tree->box.pMax[0], box.pMax[0]),
-      max(tree->box.pMax[1], box.pMax[1]),
-      max(tree->box.pMax[2], box.pMax[2])
+    leftBbs[i].pMax = QVector3D(
+      max(leftBbs[i - 1].pMax[0], box.pMax[0]),
+      max(leftBbs[i - 1].pMax[1], box.pMax[1]),
+      max(leftBbs[i - 1].pMax[2], box.pMax[2])
     );
+  }
+  tree->box = leftBbs[end - start- 1];
+  long split = (start + end) / 2;
+  if (use_SAH) {
+    float minScore = FLT_MAX;
+    rightBbs[end - start - 1] = tri[end - 1].bbox();
+    for (long i = end - start - 2; i >= 0; i--) {
+      AABB box = tri[start + i].bbox();
+      rightBbs[i].pMin = QVector3D(
+        min(rightBbs[i + 1].pMin[0], box.pMin[0]),
+        min(rightBbs[i + 1].pMin[1], box.pMin[1]),
+        min(rightBbs[i + 1].pMin[2], box.pMin[2])
+      );
+      rightBbs[i].pMax = QVector3D(
+        max(rightBbs[i + 1].pMax[0], box.pMax[0]),
+        max(rightBbs[i + 1].pMax[1], box.pMax[1]),
+        max(rightBbs[i + 1].pMax[2], box.pMax[2])
+      );
+    }
+    float z = tree->box.SurfaceArea();
+    for (long i = 1; i < end - start - 1; i++) {
+      float a = i * leftBbs[i - 1].SurfaceArea();
+      float b = (end - start - i) * rightBbs[i].SurfaceArea();
+      float score = (a + b) / z;
+      if (minScore > score) {
+        minScore = score;
+        split = start + i;
+      }
+    }
+    cout << "split " << (start + end) / 2 - split << ": CAH Score " << minScore << endl;
   }
   if (end - start <= tri.size() / qLn(tri.size())) {
     tree->type = bvhnode::LEAF;
@@ -43,8 +74,8 @@ bvhnode *build_bvh(bool use_SAH, vector<Triangle> &tri, long start, long end) {
     axis = dims[0] > dims[1] ? 0 : 1;
     axis = dims[axis] > dims[2] ? axis : 2;
     sort(tri.begin() + start, tri.begin() + end, Triangle::axisComp(axis));
-    tree->data.children[0] = build_bvh(use_SAH, tri, start, (start + end) / 2);
-    tree->data.children[1] = build_bvh(use_SAH, tri, (start + end) / 2, end);
+    tree->data.children[0] = build_bvh(use_SAH, tri, start, split);
+    tree->data.children[1] = build_bvh(use_SAH, tri, split, end);
   }
   return tree;
 }
@@ -515,7 +546,7 @@ void Mesh::clearBVH() {
 
 // Checks for a ray-triangle intersection.  Returns intersection
 // position, interpolated normal and material index.
-bool Mesh::check_intersect(bool useBVH, long &aabb_cnt, long &tri_cnt, int &mtl_idx, QVector3D &pos, QVector3D &norm, Ray &ray) {
+bool Mesh::check_intersect(bool useBVH, long &aabb_cnt, long &tri_cnt, int &mtl_idx, QVector3D &pos, QVector3D &norm, QVector2D &interpolated_uv, Ray &ray) {
   bool found_isect = false;
   IsectTri best;
   best.tri_idx = -1;
@@ -543,6 +574,7 @@ bool Mesh::check_intersect(bool useBVH, long &aabb_cnt, long &tri_cnt, int &mtl_
     Triangle &t = triangles.at(best.tri_idx);
     pos = best.b[0] * t.v[0] + best.b[1] * t.v[1] + best.b[2] * t.v[2];
     norm = best.b[0] * t.n[0] + best.b[1] * t.n[1] + best.b[2] * t.n[2];
+    interpolated_uv = best.b[0] * t.uv[0] + best.b[1] * t.uv[1] + best.b[2] * t.uv[2];
     mtl_idx = t.mtl_idx;
   }
   return found_isect;
