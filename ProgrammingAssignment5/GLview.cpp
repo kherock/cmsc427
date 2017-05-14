@@ -319,6 +319,20 @@ bool GLview::Render(QString pngFile, bool useBVH, bool useSAH) {
           Kd = QVector3D(color.red(), color.green(), color.blue()) / 255;
         }
 
+        // cast ray toward light source to determine if we should darken for a shadow
+        Ray shadow_ray;
+        shadow_ray.o = p + LightDirection * 1e-6;
+        shadow_ray.d = LightDirection;
+        shadow_ray.mint = 0;
+        shadow_ray.maxt = 1e9;
+        QVector3D shadowPosition, shadowNormal;
+        QVector2D shadowUV;
+        int shadow_mtl_idx = -1;
+        long shadow_aabb_cnt = 0, shadow_tri_cnt = 0;
+        if (mesh->check_intersect(true, shadow_aabb_cnt, shadow_tri_cnt, shadow_mtl_idx, shadowPosition, shadowNormal, shadowUV, shadow_ray)) {
+          Li *= 0.2;
+        }
+
         QVector3D L(0,0,0);
         if (m.Ns > 0) {
           L = Li * (m.Ka +                                                  // ambient
